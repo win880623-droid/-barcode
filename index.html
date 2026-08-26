@@ -22,6 +22,9 @@
   <!-- ZXing 條碼解碼庫 (自動辨識圖片條碼) -->
   <script src="https://unpkg.com/@zxing/library@0.21.2/umd/index.min.js"></script>
 
+  <!-- Supabase JS Client 庫 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
@@ -1608,6 +1611,26 @@
     window.confirmCrop = confirmCrop;
     window.closeCropModal = closeCropModal;
     window.reCropExistingImage = reCropExistingImage;
+  </script>
+
+  <!-- Supabase 初始化與條碼管理 -->
+  <script>
+    // 1. 初始化 Supabase (把你的 URL 和 Key 填在這裡)
+    const SUPABASE_URL = 'https://msuwmgyvlcaodgpttfcr.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_h89jxsCmM3bcTKdHqr5WhA_vGvb-EhS';
+    const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    // 2. 載入並顯示條碼
+    async function fetchBarcodes() {
+        // ... 後續的程式碼 ...
+    }
+
+    // 3. 上傳條碼功能
+    async function uploadBarcode() {
+        // ... 後續的程式碼 ...
+    }
+
+    fetchBarcodes();
   </script>
 </body>
 </html>
