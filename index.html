@@ -43,14 +43,6 @@
       transform: translateY(-2px);
       box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.15);
     }
-    .card-canvas-container canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
     .modal-overlay {
       transition: opacity 0.25s ease, visibility 0.25s ease;
     }
@@ -101,9 +93,57 @@
     </div>
 
     <div id="cardGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      <!-- 動態繪製卡片區域 -->
+      <!-- 動態繪製卡片 -->
     </div>
   </main>
+
+  <!-- 新增/編輯 Modal -->
+  <div id="addModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 border-b pb-3 sticky top-0 bg-white z-10">
+        <h3 id="modalTitle" class="text-lg font-bold text-slate-800"><i class="fa-solid fa-credit-card text-blue-600 mr-2"></i>新增會員卡 / 載具</h3>
+        <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="cardForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">卡片/店家名稱 *</label>
+          <input type="text" id="title" placeholder="如：全聯福利卡、好市多會員卡" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1"><i class="fa-solid fa-barcode text-blue-500 mr-1"></i>一維條碼號碼</label>
+            <input type="text" id="code1D" placeholder="如：PX123456789" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1"><i class="fa-solid fa-qrcode text-blue-500 mr-1"></i>二維碼號碼 (QR)</label>
+            <input type="text" id="code2D" placeholder="如：/AB12345" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">持有人 *</label>
+            <input type="text" id="owner" placeholder="如：蛋" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">分類標籤 *</label>
+            <input type="text" id="category" placeholder="如：超市" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">卡片主題顏色</label>
+          <input type="color" id="cardColor" value="#2563eb" class="h-9 w-full rounded cursor-pointer border p-0.5">
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm transition mt-3 shadow">
+          儲存卡片
+        </button>
+      </form>
+    </div>
+  </div>
 
   <script type="module">
     const SUPABASE_URL = 'https://msuwmgyvlcaodgpttfcr.supabase.co';
@@ -118,35 +158,137 @@
       }
     }
 
-    function normalizeCard(c) {
-      if (!c) return {};
-      if (c.code1D === undefined && c.code2D === undefined) {
-        if (c.barcodeType === 'QR') {
-          c.code2D = c.code || '';
-          c.code1D = '';
-        } else {
-          c.code1D = c.code || '';
-          c.code2D = '';
-        }
+    let cards = [];
+
+    // 開啟/關閉 Modal
+    window.openAddModal = () => {
+      document.getElementById('cardForm').reset();
+      document.getElementById('addModal').classList.remove('hidden-modal');
+      document.getElementById('addModal').classList.add('active-modal');
+    };
+
+    window.closeAddModal = () => {
+      document.getElementById('addModal').classList.remove('active-modal');
+      document.getElementById('addModal').classList.add('hidden-modal');
+    };
+
+    // 讀取 Supabase 卡片
+    async function loadCards() {
+      if (!supabaseClient) return;
+      const { data, error } = await supabaseClient.from('cards').select('*').order('id', { ascending: false });
+      if (!error && data) {
+        cards = data;
+        renderCards();
       }
-      if (c.bgImage1D === undefined) c.bgImage1D = c.bgImage || '';
-      if (c.bgImage2D === undefined) c.bgImage2D = '';
-      if (c.rawImage1D === undefined) c.rawImage1D = c.rawImage || '';
-      if (c.rawImage2D === undefined) c.rawImage2D = '';
-      return c;
     }
 
-    // 初始化頁面卡片
-    async function init() {
+    // 表單提交事件
+    document.getElementById('cardForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const newCard = {
+        id: Date.now(),
+        title: document.getElementById('title').value,
+        code1D: document.getElementById('code1D').value,
+        code2D: document.getElementById('code2D').value,
+        owner: document.getElementById('owner').value,
+        category: document.getElementById('category').value,
+        cardColor: document.getElementById('cardColor').value,
+        activeBarcodeType: 'CODE128'
+      };
+
       if (supabaseClient) {
-        const { data, error } = await supabaseClient.from('cards').select('*');
-        if (!error && data) {
-          console.log('成功連線至 Supabase 並取得資料:', data);
+        const { error } = await supabaseClient.from('cards').insert([newCard]);
+        if (error) {
+          alert('儲存失敗：' + error.message);
+          return;
         }
       }
+
+      cards.unshift(newCard);
+      renderCards();
+      closeAddModal();
+    });
+
+    // 刪除卡片
+    window.deleteCard = async (id) => {
+      if (!confirm('確定要刪除這張卡片嗎？')) return;
+      if (supabaseClient) {
+        await supabaseClient.from('cards').delete().eq('id', id);
+      }
+      cards = cards.filter(c => c.id !== id);
+      renderCards();
+    };
+
+    // 渲染卡片至畫面
+    function renderCards() {
+      const grid = document.getElementById('cardGrid');
+      grid.innerHTML = '';
+
+      if (cards.length === 0) {
+        grid.innerHTML = '<p class="col-span-full text-center text-slate-400 py-8">目前沒有卡片，請點擊右上方「新增卡片」按鈕！</p>';
+        return;
+      }
+
+      cards.forEach(card => {
+        const div = document.createElement('div');
+        div.className = 'bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative space-y-3';
+        div.style.borderTop = `6px solid ${card.cardColor || '#2563eb'}`;
+
+        div.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="font-bold text-slate-800 text-base">${card.title}</h3>
+              <p class="text-xs text-slate-500">持有人: ${card.owner} | 分類: ${card.category}</p>
+            </div>
+            <button onclick="deleteCard(${card.id})" class="text-slate-400 hover:text-rose-600 text-sm p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border text-center font-mono text-xs text-slate-600 space-y-1">
+            ${card.code1D ? `<div>條碼: ${card.code1D}</div>` : ''}
+            ${card.code2D ? `<div>QR: ${card.code2D}</div>` : ''}
+          </div>
+        `;
+        grid.appendChild(div);
+      });
     }
 
-    init();
+    // 搜尋過濾
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      const filtered = cards.filter(c => 
+        c.title.toLowerCase().includes(term) || 
+        c.owner.toLowerCase().includes(term) || 
+        (c.code1D && c.code1D.toLowerCase().includes(term))
+      );
+      // 快速重新渲染搜尋結果
+      const grid = document.getElementById('cardGrid');
+      grid.innerHTML = '';
+      filtered.forEach(card => {
+        const div = document.createElement('div');
+        div.className = 'bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative space-y-3';
+        div.style.borderTop = `6px solid ${card.cardColor || '#2563eb'}`;
+        div.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="font-bold text-slate-800 text-base">${card.title}</h3>
+              <p class="text-xs text-slate-500">持有人: ${card.owner} | 分類: ${card.category}</p>
+            </div>
+            <button onclick="deleteCard(${card.id})" class="text-slate-400 hover:text-rose-600 text-sm p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border text-center font-mono text-xs text-slate-600 space-y-1">
+            ${card.code1D ? `<div>條碼: ${card.code1D}</div>` : ''}
+            ${card.code2D ? `<div>QR: ${card.code2D}</div>` : ''}
+          </div>
+        `;
+        grid.appendChild(div);
+      });
+    });
+
+    loadCards();
   </script>
 </body>
 </html>
