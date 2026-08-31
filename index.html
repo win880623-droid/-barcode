@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>會員卡與載具 Canvas 管理器</title>
+  <title>會員卡與載具 Canvas 管理器 (雲端跨裝置同步版)</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,9 +21,6 @@
 
   <!-- ZXing 條碼解碼庫 (自動辨識圖片條碼) -->
   <script src="https://unpkg.com/@zxing/library@0.21.2/umd/index.min.js"></script>
-
-  <!-- Supabase JS Client 庫 -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     body {
@@ -65,7 +62,7 @@
       visibility: visible;
     }
 
-    /* 優化 Cropper.js 裁切框與觸控拖曳控制點 */
+    /* Cropper.js 觸控控制點優化 */
     .cropper-view-box {
       outline: 2px solid #2563eb !important;
       outline-color: rgba(37, 99, 235, 0.85) !important;
@@ -110,17 +107,18 @@
         </div>
         <div>
           <h1 class="text-lg font-bold text-slate-800 leading-tight">Canvas 智慧會員卡包</h1>
-          <p class="text-xs text-slate-500">純 HTML5 Canvas 動態繪製與高畫質條碼管理</p>
+          <p class="text-xs text-slate-500">雲端即時同步 · 多裝置共用與編輯</p>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
-        <button onclick="openSyncSettingsModal()" id="syncStatusBadge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:opacity-90 transition cursor-pointer" title="點擊設定雲端同步與金鑰">
-          <i class="fa-solid fa-cloud text-emerald-500"></i> 雲端同步中
+        <button onclick="openSyncSettingsModal()" id="cloudStatusBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition" title="點擊設定雲端同步暗號">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="cloudStatusText">雲端同步中</span>
         </button>
-        <button onclick="openSyncSettingsModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="雲端同步與備份設定">
-          <i class="fa-solid fa-gear text-slate-500"></i>
-          <span class="hidden sm:inline">同步設定</span>
+        <button onclick="openSyncSettingsModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="離線備份與同步設定">
+          <i class="fa-solid fa-cloud-arrow-up text-blue-600"></i>
+          <span class="hidden sm:inline">同步與備份</span>
         </button>
         <button onclick="openAddModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">
           <i class="fa-solid fa-plus"></i>
@@ -231,7 +229,7 @@
             <select id="canvasStyle" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
               <option value="gradient">經典漸層 (Linear Gradient)</option>
               <option value="chip">尊榮黑金 IC 晶片卡 (Black VIP)</option>
-              <option value="pattern">幾何幾何網格 (Geometric Pattern)</option>
+              <option value="pattern">幾何網格 (Geometric Pattern)</option>
               <option value="wave">水波動態流線 (Wave Flow)</option>
             </select>
           </div>
@@ -251,7 +249,7 @@
 
         <div>
           <label class="block text-xs font-bold text-slate-800 mb-2">
-            <i class="fa-solid fa-images text-blue-600 mr-1.5"></i>上傳條碼實體圖片（同張卡片可分開上傳兩張）
+            <i class="fa-solid fa-images text-blue-600 mr-1.5"></i>上傳條碼實體圖片（可選）
           </label>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -263,8 +261,8 @@
               </div>
 
               <div id="dropZone1D" class="border-2 border-dashed border-slate-300 rounded-lg p-2.5 text-center bg-white cursor-pointer hover:border-blue-400 transition" onclick="document.getElementById('imageInput1D').click()">
-                <input type="file" id="imageInput1D" accept="image/jpeg, image/png, image/webp, image/gif, image/heic, image/*" class="hidden">
-                <input type="file" id="cameraInput1D" accept="image/jpeg, image/png, image/webp, image/heic, image/*" capture="environment" class="hidden">
+                <input type="file" id="imageInput1D" accept="image/*" class="hidden">
+                <input type="file" id="cameraInput1D" accept="image/*" capture="environment" class="hidden">
                 
                 <p class="text-[11px] text-slate-500 mb-1.5">點擊開啟相簿或拍照</p>
                 <div class="flex justify-center gap-1.5">
@@ -298,8 +296,8 @@
               </div>
 
               <div id="dropZone2D" class="border-2 border-dashed border-slate-300 rounded-lg p-2.5 text-center bg-white cursor-pointer hover:border-emerald-400 transition" onclick="document.getElementById('imageInput2D').click()">
-                <input type="file" id="imageInput2D" accept="image/jpeg, image/png, image/webp, image/gif, image/heic, image/*" class="hidden">
-                <input type="file" id="cameraInput2D" accept="image/jpeg, image/png, image/webp, image/heic, image/*" capture="environment" class="hidden">
+                <input type="file" id="imageInput2D" accept="image/*" class="hidden">
+                <input type="file" id="cameraInput2D" accept="image/*" capture="environment" class="hidden">
                 
                 <p class="text-[11px] text-slate-500 mb-1.5">點擊開啟相簿或拍照</p>
                 <div class="flex justify-center gap-1.5">
@@ -328,7 +326,7 @@
         </div>
 
         <button type="submit" id="submitCardBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm transition mt-3 shadow">
-          Canvas 繪製並儲存卡片
+          Canvas 繪製並同步至雲端
         </button>
       </form>
     </div>
@@ -422,7 +420,7 @@
       </div>
       <div>
         <h4 class="text-base font-bold text-slate-800">確定刪除此卡片？</h4>
-        <p class="text-xs text-slate-500 mt-1">此動作無法復原，請確認是否移除。</p>
+        <p class="text-xs text-slate-500 mt-1">雲端與本機同步刪除，無法復原。</p>
       </div>
       <div class="flex justify-center gap-2 pt-2">
         <button onclick="closeDeleteModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl text-xs font-semibold">
@@ -439,42 +437,45 @@
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-          <i class="fa-solid fa-cloud-arrow-up text-blue-600"></i> 雲端同步與 Canvas 備份設定
+          <i class="fa-solid fa-cloud-bolt text-blue-600"></i> 雲端同步與多裝置配對
         </h3>
         <button onclick="closeSyncSettingsModal()" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <div class="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-        <label class="block text-xs font-bold text-slate-700">
-          <i class="fa-solid fa-key text-amber-500 mr-1"></i> 跨裝置同步房號 (Sync Room Key)
-        </label>
-        <div class="flex gap-2">
-          <input type="text" id="syncRoomInput" placeholder="例如：my-family-wallet-2026" class="w-full px-3 py-2 text-xs border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono">
-          <button type="button" onclick="saveSyncRoomKey()" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap shadow">
-            套用房號
-          </button>
-        </div>
+      <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-800 leading-relaxed space-y-1">
+        <p><strong><i class="fa-solid fa-mobile-screen-button mr-1"></i> 多裝置同步教學：</strong></p>
+        <p>在您的<strong>手機</strong>與<strong>電腦</strong>輸入相同的「雲端同步暗號」，兩台裝置就會自動同步彼此新增與修改的卡片與條碼！</p>
       </div>
 
-      <div class="space-y-2 border-t pt-3">
-        <label class="block text-xs font-bold text-slate-700 flex items-center justify-between">
-          <span><i class="fa-solid fa-fire text-orange-500 mr-1"></i> 自訂 Firebase Config (可選)</span>
-          <button type="button" onclick="clearCustomFirebaseConfig()" class="text-[11px] text-rose-500 hover:underline">清除設定</button>
+      <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
+        <label class="block text-xs font-bold text-slate-700">
+          <i class="fa-solid fa-key text-amber-500 mr-1"></i> 您的專屬雲端同步暗號 (Sync Key)
         </label>
-        <textarea id="firebaseConfigInput" rows="4" placeholder='{"apiKey": "...", "authDomain": "...", "projectId": "...", ...}' class="w-full p-2.5 text-xs font-mono border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-slate-900 text-slate-100"></textarea>
-        <button type="button" onclick="saveCustomFirebaseConfig()" class="w-full bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-xl text-xs font-bold transition">
-          儲存並連線 Firebase
+        <div class="flex gap-2">
+          <input type="text" id="syncKeyInput" placeholder="如：my-family-wallet" class="flex-1 px-3 py-2 text-xs border rounded-xl font-mono focus:ring-2 focus:ring-blue-500 outline-none">
+          <button type="button" onclick="applyCustomSyncKey()" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition">
+            儲存暗號並配對
+          </button>
+        </div>
+        <p class="text-[11px] text-slate-500">提示：改用有意義的密碼（例如：<code class="text-blue-600 font-bold">wang-family-cards</code>），在其他手機輸入即可同步。</p>
+      </div>
+
+      <div class="pt-2 border-t border-slate-100 space-y-2">
+        <h4 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-cloud-arrow-up text-emerald-600 mr-1"></i> 一鍵推送本機舊卡片至雲端</h4>
+        <p class="text-xs text-slate-500">若您此裝置有離線創建的卡片，可一鍵上傳讓其他裝置同步：</p>
+        <button type="button" onclick="pushLocalCardsToCloud()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-upload"></i> 上傳本機所有卡片至目前同步暗號
         </button>
       </div>
 
-      <div class="space-y-2 border-t pt-3">
-        <h4 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-file-export text-emerald-600 mr-1"></i> 離線 JSON 備份與匯入</h4>
-        <div class="grid grid-cols-2 gap-2">
-          <button type="button" onclick="exportCardsJSON()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1">
-            <i class="fa-solid fa-download"></i> 匯出 JSON 備份檔
+      <div class="pt-2 border-t border-slate-100 space-y-2">
+        <h4 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-file-export text-slate-600 mr-1"></i> 離線 JSON 備份檔</h4>
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <button type="button" onclick="exportCardsJSON()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition">
+            <i class="fa-solid fa-download"></i> 匯出 JSON 備份
           </button>
-          <button type="button" onclick="document.getElementById('importJsonFileInput').click()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1">
-            <i class="fa-solid fa-upload"></i> 匯入 JSON 備份檔
+          <button type="button" onclick="document.getElementById('importJsonFileInput').click()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition">
+            <i class="fa-solid fa-upload"></i> 匯入 JSON 備份
           </button>
           <input type="file" id="importJsonFileInput" accept=".json" class="hidden" onchange="importCardsJSON(event)">
         </div>
@@ -484,8 +485,34 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'membership-cards-app';
+    let firebaseConfig = null;
+    try {
+      if (typeof __firebase_config !== 'undefined') {
+        firebaseConfig = JSON.parse(__firebase_config);
+      }
+    } catch(e) {}
+
+    let app = null;
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+    let unsubscribeFirestore = null;
+
+    // 取得或生成跨裝置同步暗號 (Sync Key)
+    function getStoredSyncKey() {
+      let key = localStorage.getItem('canvas_cards_sync_key');
+      if (!key) {
+        key = 'wallet-' + Math.random().toString(36).substring(2, 8);
+        localStorage.setItem('canvas_cards_sync_key', key);
+      }
+      return key;
+    }
+
+    window.currentSyncKey = getStoredSyncKey();
 
     const DEFAULT_CARDS = [
       {
@@ -502,7 +529,8 @@
         bgImage1D: '',
         bgImage2D: '',
         rawImage1D: '',
-        rawImage2D: ''
+        rawImage2D: '',
+        syncKey: window.currentSyncKey
       },
       {
         id: 2,
@@ -518,197 +546,12 @@
         bgImage1D: '',
         bgImage2D: '',
         rawImage1D: '',
-        rawImage2D: ''
-      },
-      {
-        id: 3,
-        title: '7-ELEVEN OPEN POINT',
-        code1D: 'OP9988776655',
-        code2D: '',
-        activeBarcodeType: 'CODE128',
-        owner: '蛋',
-        category: '便利商店',
-        expiryDate: '',
-        cardColor: '#e11d48',
-        canvasStyle: 'pattern',
-        bgImage1D: '',
-        bgImage2D: '',
-        rawImage1D: '',
-        rawImage2D: ''
+        rawImage2D: '',
+        syncKey: window.currentSyncKey
       }
     ];
 
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'membership-cards-app';
-    let db = null;
-    let auth = null;
-    let isCloudEnabled = false;
-
-    function getSyncRoomKey() {
-      try {
-        return localStorage.getItem('custom_sync_room_key') || appId;
-      } catch (e) {
-        return appId;
-      }
-    }
-
-    const SUPABASE_URL = 'https://msuwmgyvlcaodgpttfcr.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_h89jxsCmM3bcTKdHqr5WhA_vGvb-EhS';
-    let supabaseClient = null;
-
-    if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
-      try {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      } catch (e) {
-        console.warn('Supabase Client 初始化提醒:', e);
-      }
-    }
-
-    async function initCloudStorage() {
-      let customFirebaseConfigRaw = null;
-      try {
-        customFirebaseConfigRaw = localStorage.getItem('custom_firebase_config');
-      } catch(e) {}
-
-      let firebaseConfigToUse = null;
-      if (customFirebaseConfigRaw) {
-        try {
-          firebaseConfigToUse = JSON.parse(customFirebaseConfigRaw);
-        } catch(e) {}
-      } else if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-        try {
-          firebaseConfigToUse = JSON.parse(__firebase_config);
-        } catch(e) {}
-      }
-
-      if (firebaseConfigToUse) {
-        try {
-          const app = initializeApp(firebaseConfigToUse);
-          auth = getAuth(app);
-          db = getFirestore(app);
-
-          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
-          } else {
-            await signInAnonymously(auth);
-          }
-
-          isCloudEnabled = true;
-          updateSyncStatusBadge('synced');
-          setupFirestoreRealtimeListener();
-          return;
-        } catch (err) {
-          console.warn('Firebase 初始化失敗:', err);
-        }
-      }
-
-      if (supabaseClient) {
-        const success = await setupSupabaseRealtimeListener();
-        if (success) return;
-      }
-
-      updateSyncStatusBadge('local');
-    }
-
-    function setupFirestoreRealtimeListener() {
-      if (!db) return;
-      const roomKey = getSyncRoomKey();
-      const cardsCol = collection(db, 'artifacts', roomKey, 'public', 'data', 'cards');
-
-      onSnapshot(cardsCol, (snapshot) => {
-        if (snapshot.metadata.hasPendingWrites) return;
-
-        const cloudCards = [];
-        snapshot.forEach((docSnap) => {
-          cloudCards.push(docSnap.data());
-        });
-
-        if (cloudCards.length > 0) {
-          cards = cloudCards.map(normalizeCard);
-          cards.sort((a, b) => (b.id || 0) - (a.id || 0));
-          saveCardsToStorage(cards);
-          updateDropdowns();
-          renderAllCards();
-          updateSyncStatusBadge('synced');
-        } else if (cards.length > 0 && isCloudEnabled) {
-          cards.forEach(c => saveCardToCloud(c));
-        }
-      }, (error) => {
-        console.error('雲端同步監聽錯誤:', error);
-        updateSyncStatusBadge('error');
-      });
-    }
-
-    async function setupSupabaseRealtimeListener() {
-      if (!supabaseClient) return false;
-      const roomKey = getSyncRoomKey();
-      try {
-        updateSyncStatusBadge('saving');
-        
-        const { data, error } = await supabaseClient.from('cards').select('*').eq('room_key', roomKey);
-        
-        if (!error && data && data.length > 0) {
-          cards = data.map(normalizeCard);
-          cards.sort((a, b) => (b.id || 0) - (a.id || 0));
-          saveCardsToStorage(cards);
-          updateDropdowns();
-          renderAllCards();
-        }
-
-        isCloudEnabled = true;
-        updateSyncStatusBadge('synced');
-        return true;
-      } catch (err) {
-        return false;
-      }
-    }
-
-    async function saveCardToCloud(card) {
-      const roomKey = getSyncRoomKey();
-      card.room_key = roomKey;
-
-      if (db && isCloudEnabled) {
-        try {
-          updateSyncStatusBadge('saving');
-          const cardDoc = doc(db, 'artifacts', roomKey, 'public', 'data', 'cards', String(card.id));
-          await setDoc(cardDoc, card, { merge: true });
-          updateSyncStatusBadge('synced');
-        } catch (err) {
-          updateSyncStatusBadge('error');
-        }
-      }
-    }
-
-    async function deleteCardFromCloud(cardId) {
-      const roomKey = getSyncRoomKey();
-      if (db && isCloudEnabled) {
-        try {
-          updateSyncStatusBadge('saving');
-          const cardDoc = doc(db, 'artifacts', roomKey, 'public', 'data', 'cards', String(cardId));
-          await deleteDoc(cardDoc);
-          updateSyncStatusBadge('synced');
-        } catch (err) {
-          updateSyncStatusBadge('error');
-        }
-      }
-    }
-
-    function updateSyncStatusBadge(status) {
-      const badge = document.getElementById('syncStatusBadge');
-      if (!badge) return;
-
-      if (status === 'synced') {
-        badge.className = 'hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:opacity-90 transition cursor-pointer';
-        badge.innerHTML = `<i class="fa-solid fa-cloud text-emerald-500"></i> 雲端同步中`;
-      } else if (status === 'saving') {
-        badge.className = 'hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:opacity-90 transition cursor-pointer';
-        badge.innerHTML = `<i class="fa-solid fa-arrows-rotate animate-spin text-blue-500"></i> 雲端儲存中...`;
-      } else {
-        badge.className = 'hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 hover:opacity-90 transition cursor-pointer';
-        badge.innerHTML = `<i class="fa-solid fa-hard-drive text-slate-400"></i> 本地儲存`;
-      }
-    }
-
-    function loadSavedCards() {
+    function loadSavedCardsFromLocal() {
       try {
         const saved = localStorage.getItem('canvas_cards_v3');
         return saved ? JSON.parse(saved) : null;
@@ -717,19 +560,21 @@
       }
     }
 
-    function saveCardsToStorage(data) {
+    function saveCardsToLocalStorage(data) {
       try {
         localStorage.setItem('canvas_cards_v3', JSON.stringify(data));
-      } catch (err) {}
+      } catch (err) {
+        showToast('⚠️ 本機快取容量警告');
+      }
     }
 
-    let cards = loadSavedCards();
-    if (!cards || !Array.isArray(cards)) {
-      cards = DEFAULT_CARDS;
-      saveCardsToStorage(cards);
+    window.cards = loadSavedCardsFromLocal();
+    if (!window.cards || !Array.isArray(window.cards) || window.cards.length === 0) {
+      window.cards = DEFAULT_CARDS;
+      saveCardsToLocalStorage(window.cards);
     }
 
-    function normalizeCard(c) {
+    window.normalizeCard = function(c) {
       if (!c.canvasStyle) c.canvasStyle = 'gradient';
       if (c.code1D === undefined && c.code2D === undefined) {
         if (c.barcodeType === 'QR') {
@@ -749,10 +594,162 @@
         c.activeBarcodeType = (c.code1D || c.bgImage1D) ? 'CODE128' : 'QR';
       }
       return c;
+    };
+
+    window.cards = window.cards.map(window.normalizeCard);
+
+    async function initFirebaseAndSync() {
+      if (!firebaseConfig) {
+        updateCloudStatusUI(false, '本機離線模式');
+        return;
+      }
+
+      try {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          const userCred = await signInWithCustomToken(auth, __initial_auth_token);
+          currentUser = userCred.user;
+        } else {
+          const userCred = await signInAnonymously(auth);
+          currentUser = userCred.user;
+        }
+
+        if (currentUser) {
+          updateCloudStatusUI(true, `雲端即時同步 (${window.currentSyncKey})`);
+          setupFirestoreRealtimeListener();
+        }
+      } catch (err) {
+        console.error("Firebase Sync Init Error:", err);
+        updateCloudStatusUI(false, '雲端離線 (使用本機快取)');
+      }
     }
 
-    cards = cards.map(normalizeCard);
+    function setupFirestoreRealtimeListener() {
+      if (!db || !currentUser) return;
+      if (unsubscribeFirestore) unsubscribeFirestore();
 
+      // RULE 1 Path: /artifacts/{appId}/public/data/cards
+      const cardsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'cards');
+
+      // RULE 2: No complex queries or where - fetch collection and filter in JS memory
+      unsubscribeFirestore = onSnapshot(cardsColRef, (snapshot) => {
+        const cloudCards = [];
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          if (data && data.syncKey === window.currentSyncKey) {
+            cloudCards.push(window.normalizeCard(data));
+          }
+        });
+
+        if (cloudCards.length > 0) {
+          cloudCards.sort((a, b) => (b.createdAt || b.id) - (a.createdAt || a.id));
+          window.cards = cloudCards;
+          saveCardsToLocalStorage(window.cards);
+          window.updateDropdowns();
+          window.renderAllCards();
+        } else if (window.cards && window.cards.length > 0) {
+          // If cloud has no cards for this syncKey yet, offer to push local cards
+          pushLocalCardsToCloud();
+        }
+      }, (error) => {
+        console.error("Firestore onSnapshot error:", error);
+        updateCloudStatusUI(false, '連線中斷');
+      });
+    }
+
+    window.saveCardToCloud = async function(cardData) {
+      if (!db || !currentUser) {
+        window.saveAndRefreshLocal();
+        return;
+      }
+      try {
+        cardData.syncKey = window.currentSyncKey;
+        cardData.updatedAt = Date.now();
+        if (!cardData.createdAt) cardData.createdAt = Date.now();
+
+        // RULE 1 Path: /artifacts/{appId}/public/data/cards/{id}
+        const cardDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'cards', String(cardData.id));
+        await setDoc(cardDocRef, cardData, { merge: true });
+        showToast('☁️ 已即時同步至雲端');
+      } catch (err) {
+        console.error("Firestore setDoc Error:", err);
+        showToast('⚠️ 雲端寫入失敗，已暫存本機');
+        window.saveAndRefreshLocal();
+      }
+    };
+
+    window.deleteCardFromCloud = async function(cardId) {
+      if (!db || !currentUser) {
+        window.cards = window.cards.filter(c => c.id !== cardId);
+        window.saveAndRefreshLocal();
+        return;
+      }
+      try {
+        const cardDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'cards', String(cardId));
+        await deleteDoc(cardDocRef);
+        showToast('☁️ 雲端已同步刪除');
+      } catch (err) {
+        console.error("Firestore deleteDoc Error:", err);
+        window.cards = window.cards.filter(c => c.id !== cardId);
+        window.saveAndRefreshLocal();
+      }
+    };
+
+    window.pushLocalCardsToCloud = async function() {
+      if (!db || !currentUser) {
+        showToast('⚠️ 未連接雲端資料庫');
+        return;
+      }
+      try {
+        showToast('⚡ 正在同步卡片至雲端...');
+        for (const card of window.cards) {
+          card.syncKey = window.currentSyncKey;
+          card.updatedAt = Date.now();
+          if (!card.createdAt) card.createdAt = Date.now();
+          const cardDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'cards', String(card.id));
+          await setDoc(cardDocRef, card, { merge: true });
+        }
+        showToast('✅ 所有卡片已推送至雲端！');
+      } catch (err) {
+        console.error("Push Error:", err);
+        showToast('❌ 推送至雲端失敗');
+      }
+    };
+
+    window.applyCustomSyncKey = function() {
+      const input = document.getElementById('syncKeyInput');
+      if (!input || !input.value.trim()) return;
+      const newKey = input.value.trim();
+      window.currentSyncKey = newKey;
+      localStorage.setItem('canvas_cards_sync_key', newKey);
+      
+      updateCloudStatusUI(true, `雲端同步 (${newKey})`);
+      setupFirestoreRealtimeListener();
+      showToast(`已切換雲端同步暗號：${newKey}`);
+      window.closeSyncSettingsModal();
+    };
+
+    function updateCloudStatusUI(isOnline, text) {
+      const statusText = document.getElementById('cloudStatusText');
+      const statusBtn = document.getElementById('cloudStatusBtn');
+      if (statusText) statusText.innerText = text;
+      if (statusBtn) {
+        if (isOnline) {
+          statusBtn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition';
+        } else {
+          statusBtn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition';
+        }
+      }
+    }
+
+    // Auth Initialization on Page Load
+    initFirebaseAndSync();
+  </script>
+
+  <script>
     function getExpiryStatus(dateStr) {
       if (!dateStr) return { status: 'valid', text: '無期限', colorClass: 'text-slate-500', bgClass: 'bg-slate-100' };
       const today = new Date();
@@ -786,9 +783,10 @@
     }
 
     function updateDropdowns() {
-      const owners = [...new Set(cards.map(c => c.owner).filter(Boolean))];
-      const categories = [...new Set(cards.map(c => c.category).filter(Boolean))];
-      const titles = [...new Set(cards.map(c => c.title).filter(Boolean))];
+      if (!window.cards) return;
+      const owners = [...new Set(window.cards.map(c => c.owner).filter(Boolean))];
+      const categories = [...new Set(window.cards.map(c => c.category).filter(Boolean))];
+      const titles = [...new Set(window.cards.map(c => c.title).filter(Boolean))];
 
       const ownerList = document.getElementById('ownerList');
       if (ownerList) ownerList.innerHTML = owners.map(o => `<option value="${escapeHtml(o)}">`).join('');
@@ -810,8 +808,8 @@
       }
     }
 
-    function saveAndRefresh() {
-      saveCardsToStorage(cards);
+    function saveAndRefreshLocal() {
+      if (typeof saveCardsToLocalStorage === 'function') saveCardsToLocalStorage(window.cards);
       updateDropdowns();
       renderAllCards();
     }
@@ -827,18 +825,18 @@
     }
 
     function renderAllCards() {
-      if (!cardGrid) return;
+      if (!cardGrid || !window.cards) return;
 
       const searchVal = (searchInput ? searchInput.value : '').toLowerCase().trim();
       const ownerVal = ownerFilter ? ownerFilter.value : '';
       const catVal = categoryFilter ? categoryFilter.value : '';
       const expVal = expiryFilter ? expiryFilter.value : '';
 
-      let countAllNum = cards.length;
+      let countAllNum = window.cards.length;
       let countExpiringNum = 0;
       let countValidNum = 0;
 
-      cards.forEach(card => {
+      window.cards.forEach(card => {
         const statusObj = getExpiryStatus(card.expiryDate);
         if (statusObj.status === 'expired' || statusObj.status === 'warning') {
           countExpiringNum++;
@@ -855,7 +853,7 @@
       if (countExpiringEl) countExpiringEl.innerText = countExpiringNum;
       if (countValidEl) countValidEl.innerText = countValidNum;
 
-      const filtered = cards.filter(card => {
+      const filtered = window.cards.filter(card => {
         const statusObj = getExpiryStatus(card.expiryDate);
 
         if (currentMainTab === 'expiring' && statusObj.status !== 'expired' && statusObj.status !== 'warning') {
@@ -892,7 +890,7 @@
             <i class="fa-solid fa-credit-card text-4xl text-slate-300 mb-3 block"></i>
             <p class="text-sm text-slate-500 font-medium">沒有找到符合條件的會員卡或載具</p>
             <button onclick="openAddModal()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition">
-              <i class="fa-solid fa-plus mr-1"></i> 新增第一張卡片
+              <i class="fa-solid fa-plus mr-1"></i> 新增卡片
             </button>
           </div>
         `;
@@ -950,7 +948,7 @@
     function downloadCanvasPNG() {
       const scanCanvas = document.getElementById('scanCanvas');
       if (!scanCanvas) return;
-      const card = cards.find(c => c.id === currentScanCardId);
+      const card = window.cards.find(c => c.id === currentScanCardId);
       const fileName = card ? `card_${card.title}.png` : 'card_barcode.png';
       
       const link = document.createElement('a');
@@ -997,11 +995,14 @@
       if (categoryFilter) categoryFilter.addEventListener('change', renderAllCards);
       if (expiryFilter) expiryFilter.addEventListener('change', renderAllCards);
 
+      const syncKeyInput = document.getElementById('syncKeyInput');
+      if (syncKeyInput && window.currentSyncKey) {
+        syncKeyInput.value = window.currentSyncKey;
+      }
+
       updateDropdowns();
       renderAllCards();
       setupImageUploadHandlers();
-
-      initCloudStorage();
 
       let resizeTimer;
       window.addEventListener('resize', () => {
@@ -1010,7 +1011,7 @@
           renderAllCards();
           if (currentScanCardId) {
             const scanCanvas = document.getElementById('scanCanvas');
-            const card = cards.find(c => c.id === currentScanCardId);
+            const card = window.cards.find(c => c.id === currentScanCardId);
             if (scanCanvas && card) drawCardCanvas(scanCanvas, card, true);
           }
         }, 150);
@@ -1063,7 +1064,7 @@
             ctx.fillRect(0, 0, width, height);
             ctx.drawImage(img, 0, 0, width, height);
 
-            resolve(canvas.toDataURL('image/jpeg', 0.88));
+            resolve(canvas.toDataURL('image/jpeg', 0.85));
           };
           img.src = e.target.result;
         };
@@ -1075,8 +1076,8 @@
       if (!file || !file.type.startsWith('image/')) return;
 
       try {
-        showToast('⚡ 正在載入與優化圖片...');
-        const compressedDataUrl = await compressAndResizeImage(file, 1600);
+        showToast('⚡ 正在載入圖片...');
+        const compressedDataUrl = await compressAndResizeImage(file, 1400);
         
         if (targetType === 'QR') {
           currentRawImageData2D = compressedDataUrl;
@@ -1147,7 +1148,7 @@
       ctx.fillRect(0, 0, 800, 504);
       ctx.drawImage(croppedCanvas, 0, 0, 800, 504);
 
-      const croppedDataUrl = targetCanvas.toDataURL('image/jpeg', 0.92);
+      const croppedDataUrl = targetCanvas.toDataURL('image/jpeg', 0.88);
       closeCropModal(true);
       if (onCropSuccessCallback) onCropSuccessCallback(croppedDataUrl);
     }
@@ -1185,7 +1186,7 @@
           const input1D = document.getElementById('code1D');
           if (input1D && !input1D.value) input1D.value = scanResult.code;
         }
-        showToast(`已自動辨識並填入卡號：${scanResult.code}`);
+        showToast(`已自動辨識卡號：${scanResult.code}`);
       }
     }
 
@@ -1232,12 +1233,12 @@
       toast.className = 'fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-lg text-sm z-50 flex items-center gap-2';
       toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> ${msg}`;
       document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3500);
+      setTimeout(() => toast.remove(), 3000);
     }
 
     async function drawCardCanvas(canvas, cardData, isScanView = false) {
       if (!canvas) return;
-      normalizeCard(cardData);
+      if (typeof window.normalizeCard === 'function') window.normalizeCard(cardData);
 
       const dpr = Math.max(window.devicePixelRatio || 1, 2);
       const rect = canvas.getBoundingClientRect();
@@ -1259,10 +1260,8 @@
       const targetBgImage = (activeType === 'QR' ? cardData.bgImage2D : cardData.bgImage1D) || cardData.bgImage1D || cardData.bgImage2D || '';
       const hasBgImage = !!targetBgImage;
 
-      // 繪製高級 Canvas 藝術背景
       drawCanvasBackground(ctx, width, height, isScanView ? '#ffffff' : cardData.cardColor, cardData.canvasStyle, isScanView);
 
-      // 繪製卡片標題與裝飾資訊
       if (!isScanView) {
         const titleFontSize = Math.max(14, Math.round(width * 0.045));
         const subFontSize = Math.max(10, Math.round(width * 0.028));
@@ -1289,7 +1288,6 @@
         ctx.shadowBlur = 0;
       }
 
-      // 條碼展示白框與渲染
       const activeCode = (activeType === 'QR' ? cardData.code2D : cardData.code1D) || cardData.code1D || cardData.code2D || '';
       const margin = isScanView ? 12 : 10;
       const boxHeight = isScanView ? height - (margin * 2) : height * 0.65;
@@ -1394,7 +1392,6 @@
       ctx.fillRect(0, 0, width, height);
 
       if (style === 'chip') {
-        // 繪製金屬 IC 晶片 (Canvas 原生繪製)
         const chipX = width - 52;
         const chipY = 16;
         const chipW = 36;
@@ -1409,7 +1406,6 @@
         ctx.moveTo(chipX, chipY + 13); ctx.lineTo(chipX + chipW, chipY + 13);
         ctx.stroke();
       } else if (style === 'pattern') {
-        // 幾何圓點網格
         ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
         for (let x = 10; x < width; x += 16) {
           for (let y = 10; y < height; y += 16) {
@@ -1419,7 +1415,6 @@
           }
         }
       } else if (style === 'wave') {
-        // 流動水波紋
         ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
         ctx.beginPath();
         ctx.moveTo(0, height * 0.4);
@@ -1514,21 +1509,22 @@
       };
 
       if (editingCardId !== null) {
-        const index = cards.findIndex(c => c.id === editingCardId);
+        newCardData.id = editingCardId;
+        const index = window.cards.findIndex(c => c.id === editingCardId);
         if (index !== -1) {
-          newCardData.id = editingCardId;
-          cards[index] = { ...cards[index], ...newCardData };
-          saveCardToCloud(cards[index]);
-          showToast('已儲存變更並同步雲端');
+          window.cards[index] = { ...window.cards[index], ...newCardData };
         }
       } else {
         newCardData.id = Date.now();
-        cards.unshift(newCardData);
-        saveCardToCloud(newCardData);
-        showToast('已新增卡片並同步雲端');
+        window.cards.unshift(newCardData);
       }
 
-      saveAndRefresh();
+      if (typeof window.saveCardToCloud === 'function') {
+        window.saveCardToCloud(newCardData);
+      } else {
+        saveAndRefreshLocal();
+      }
+
       closeAddModal();
     }
 
@@ -1562,10 +1558,15 @@
 
     function switchScanBarcodeType(type) {
       if (!currentScanCardId) return;
-      const card = cards.find(c => c.id === currentScanCardId);
+      const card = window.cards.find(c => c.id === currentScanCardId);
       if (!card) return;
 
       card.activeBarcodeType = type;
+      if (typeof window.saveCardToCloud === 'function') {
+        window.saveCardToCloud(card);
+      } else {
+        saveAndRefreshLocal();
+      }
       
       const btn1D = document.getElementById('scanBtn1D');
       const btnQR = document.getElementById('scanBtnQR');
@@ -1588,7 +1589,7 @@
     }
 
     function openScanModal(id) {
-      const card = cards.find(c => c.id === id);
+      const card = window.cards.find(c => c.id === id);
       if (!card) return;
       currentScanCardId = id;
       document.getElementById('scanTitle').innerText = card.title;
@@ -1626,7 +1627,7 @@
 
     function openEditModal(e, id) {
       if (e) e.stopPropagation();
-      const card = cards.find(c => c.id === id);
+      const card = window.cards.find(c => c.id === id);
       if (!card) return;
       editingCardId = id;
 
@@ -1686,17 +1687,18 @@
 
     function confirmDeleteCard() {
       if (pendingDeleteId !== null) {
-        cards = cards.filter(c => c.id !== pendingDeleteId);
-        deleteCardFromCloud(pendingDeleteId);
-        saveAndRefresh();
-        showToast('已刪除卡片');
+        if (typeof window.deleteCardFromCloud === 'function') {
+          window.deleteCardFromCloud(pendingDeleteId);
+        } else {
+          window.cards = window.cards.filter(c => c.id !== pendingDeleteId);
+          saveAndRefreshLocal();
+        }
       }
       closeDeleteModal();
     }
 
     function openSyncSettingsModal() {
       const modal = document.getElementById('syncSettingsModal');
-      document.getElementById('syncRoomInput').value = getSyncRoomKey();
       modal.classList.remove('hidden-modal');
       modal.classList.add('active-modal');
     }
@@ -1707,46 +1709,15 @@
       modal.classList.add('hidden-modal');
     }
 
-    function saveSyncRoomKey() {
-      const val = document.getElementById('syncRoomInput').value.trim();
-      if (val) {
-        localStorage.setItem('custom_sync_room_key', val);
-        showToast(`已切換房號至：${val}`);
-        initCloudStorage();
-        closeSyncSettingsModal();
-      }
-    }
-
-    function saveCustomFirebaseConfig() {
-      const val = document.getElementById('firebaseConfigInput').value.trim();
-      if (val) {
-        try {
-          JSON.parse(val);
-          localStorage.setItem('custom_firebase_config', val);
-          showToast('已儲存 Firebase 設定');
-          initCloudStorage();
-          closeSyncSettingsModal();
-        } catch (e) {
-          showToast('❌ JSON 格式不正確');
-        }
-      }
-    }
-
-    function clearCustomFirebaseConfig() {
-      localStorage.removeItem('custom_firebase_config');
-      showToast('已清除 Firebase 設定');
-      initCloudStorage();
-    }
-
     function exportCardsJSON() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cards, null, 2));
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.cards, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `cards_canvas_${new Date().toISOString().slice(0,10)}.json`);
+      downloadAnchor.setAttribute("download", `cards_backup_${new Date().toISOString().slice(0,10)}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
-      showToast('已匯出 JSON 備份檔！');
+      showToast('已下載 JSON 備份檔！');
     }
 
     function importCardsJSON(e) {
@@ -1757,12 +1728,17 @@
         try {
           const imported = JSON.parse(event.target.result);
           if (Array.isArray(imported)) {
-            cards = imported.map(normalizeCard);
-            saveAndRefresh();
-            showToast(`已成功匯入 ${cards.length} 張卡片！`);
+            window.cards = imported.map(window.normalizeCard);
+            saveAndRefreshLocal();
+            if (typeof window.pushLocalCardsToCloud === 'function') {
+              window.pushLocalCardsToCloud();
+            }
+            showToast(`已成功匯入 ${window.cards.length} 張卡片！`);
             closeSyncSettingsModal();
           }
-        } catch (err) {}
+        } catch (err) {
+          showToast('❌ JSON 備份檔格式無效');
+        }
       };
       reader.readAsText(file);
     }
@@ -1783,9 +1759,6 @@
     window.closeCropModal = closeCropModal;
     window.openSyncSettingsModal = openSyncSettingsModal;
     window.closeSyncSettingsModal = closeSyncSettingsModal;
-    window.saveSyncRoomKey = saveSyncRoomKey;
-    window.saveCustomFirebaseConfig = saveCustomFirebaseConfig;
-    window.clearCustomFirebaseConfig = clearCustomFirebaseConfig;
     window.exportCardsJSON = exportCardsJSON;
     window.importCardsJSON = importCardsJSON;
     window.downloadCanvasPNG = downloadCanvasPNG;
