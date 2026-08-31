@@ -3,19 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Canvas 智慧卡包 (Supabase 同步修正版)</title>
+  <title>Canvas 智慧卡包 (穩定修復版)</title>
 
-  <!-- Tailwind CSS -->
+  <!-- 1. 先載入必要的函式庫 -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome 圖示庫 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Cropper.js (圖片裁切) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
-  <!-- 條碼生成庫 -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-  <!-- Supabase SDK -->
+  
+  <!-- Supabase SDK 必須在自定義腳本前載入 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -26,15 +24,12 @@
       box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.12);
       transition: transform 0.2s ease; cursor: pointer;
     }
-    .card-canvas-container:hover { transform: translateY(-2px); }
     .card-canvas-container canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
-    .modal-overlay { transition: opacity 0.25s ease; }
+    .modal-overlay { transition: opacity 0.25s ease, visibility 0.25s ease; z-index: 50; }
     .hidden-modal { opacity: 0; pointer-events: none; visibility: hidden; }
     .active-modal { opacity: 1; pointer-events: auto; visibility: visible; }
-    
     .preview-actions { position: absolute; top: 4px; right: 4px; display: flex; gap: 4px; }
-    .btn-mini { background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 6px; font-size: 10px; transition: 0.2s; }
-    .btn-mini:hover { background: #2563eb; }
+    .btn-mini { background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 6px; font-size: 10px; }
   </style>
 </head>
 <body class="text-slate-700 min-h-screen pb-12">
@@ -45,65 +40,76 @@
         <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md"><i class="fa-solid fa-paintbrush"></i></div>
         <div>
           <h1 class="text-lg font-bold text-slate-800 leading-tight">Canvas 智慧卡包</h1>
-          <p class="text-xs text-slate-500">Supabase 雲端同步系統</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="openSyncSettingsModal()" id="cloudStatusBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 border transition flex items-center gap-1.5">
+        <!-- 修正：確保這個按鈕永遠可以點擊 -->
+        <button onclick="openSyncSettingsModal()" id="cloudStatusBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border shadow-sm transition flex items-center gap-1.5 cursor-pointer">
           <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
-          <span id="cloudStatusText">連線中...</span>
+          <span id="cloudStatusText">設定連線</span>
         </button>
         <button onclick="openAddModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">
-          <i class="fa-solid fa-plus"></i><span class="hidden sm:inline">新增卡片</span>
+          <i class="fa-solid fa-plus"></i><span>新增</span>
         </button>
       </div>
     </div>
   </header>
 
   <main class="max-w-5xl mx-auto px-4 mt-6 space-y-5">
-    <!-- 頂部標籤切換 -->
+    <!-- 切換標籤 -->
     <div class="flex items-center gap-2 overflow-x-auto pb-1">
-      <button id="tabAll" onclick="switchMainTab('all')" class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition">全部 <span id="countAll">0</span></button>
-      <button id="tabExpiring" onclick="switchMainTab('expiring')" class="px-4 py-2 rounded-xl text-xs font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition">即將過期 <span id="countExpiring" class="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-800 font-bold ml-1">0</span></button>
-      <button id="tabValid" onclick="switchMainTab('valid')" class="px-4 py-2 rounded-xl text-xs font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition">有效卡片 <span id="countValid" class="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-600 ml-1">0</span></button>
+      <button id="tabAll" onclick="switchMainTab('all')" class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white">全部 <span id="countAll">0</span></button>
+      <button id="tabExpiring" onclick="switchMainTab('expiring')" class="px-4 py-2 rounded-xl text-xs font-medium bg-white border">即將過期 <span id="countExpiring">0</span></button>
+      <button id="tabValid" onclick="switchMainTab('valid')" class="px-4 py-2 rounded-xl text-xs font-medium bg-white border">有效 <span id="countValid">0</span></button>
     </div>
 
-    <!-- 搜尋與下拉過濾器 -->
+    <!-- 搜尋區 -->
     <div class="bg-white p-4 rounded-2xl border shadow-sm flex flex-col md:flex-row gap-3">
-      <div class="relative flex-1">
-        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-        <input type="text" id="searchInput" placeholder="搜尋名稱、持有者、條碼..." class="w-full pl-8 pr-4 py-2 text-xs border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div class="grid grid-cols-3 gap-2">
-        <select id="ownerFilter" class="px-2 py-2 text-xs border rounded-xl bg-white outline-none"><option value="">持有人</option></select>
-        <select id="categoryFilter" class="px-2 py-2 text-xs border rounded-xl bg-white outline-none"><option value="">分類</option></select>
-        <select id="expiryFilter" class="px-2 py-2 text-xs border rounded-xl bg-white outline-none">
-          <option value="">所有狀態</option>
-          <option value="valid">有效</option>
-          <option value="warning">即將到期</option>
-          <option value="expired">已過期</option>
-        </select>
+      <input type="text" id="searchInput" placeholder="搜尋名稱、持有者..." class="flex-1 px-4 py-2 text-xs border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+      <div class="grid grid-cols-2 gap-2">
+        <select id="ownerFilter" class="px-2 py-2 text-xs border rounded-xl bg-white"><option value="">持有人</option></select>
+        <select id="categoryFilter" class="px-2 py-2 text-xs border rounded-xl bg-white"><option value="">分類</option></select>
       </div>
     </div>
 
     <div id="cardGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
   </main>
 
-  <!-- [此處保留所有 Modal：addModal, scanModal, cropModal, syncSettingsModal, deleteModal] -->
-  <!-- 為節省篇幅，這部分與上一版完全一致，請確保你的 HTML 檔案中包含這些結構 -->
-  
-  <!-- 新增/編輯 Modal (節錄部分關鍵區塊) -->
-  <div id="addModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <!-- 同步設定 Modal (修正：確保 ID 正確且無遮擋) -->
+  <div id="syncSettingsModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-lg">雲端同步設定</h3>
+        <button onclick="closeSyncSettingsModal()" class="text-slate-400 text-2xl">×</button>
+      </div>
+      <div class="bg-blue-50 p-4 rounded-xl space-y-2">
+        <label class="text-xs font-bold block text-blue-800">同步暗號 (房號)</label>
+        <div class="flex gap-2">
+          <input type="text" id="syncKeyInput" placeholder="例如：my-family-room" class="flex-1 px-3 py-2 text-sm border rounded-xl outline-none">
+          <button onclick="applyCustomSyncKey()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold">儲存並配對</button>
+        </div>
+      </div>
+      <button onclick="pushLocalCardsToCloud()" class="w-full bg-emerald-600 text-white py-2.5 rounded-xl text-xs font-bold">上傳本機卡片至雲端</button>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="exportCardsJSON()" class="bg-slate-100 py-2 rounded-xl text-xs font-bold">匯出備份</button>
+        <button onclick="document.getElementById('importJsonFileInput').click()" class="bg-slate-100 py-2 rounded-xl text-xs font-bold">匯入備份</button>
+      </div>
+      <input type="file" id="importJsonFileInput" accept=".json" class="hidden" onchange="importCardsJSON(event)">
+    </div>
+  </div>
+
+  <!-- 新增/編輯 Modal -->
+  <div id="addModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4 border-b pb-3 sticky top-0 bg-white">
-        <h3 id="modalTitle" class="font-bold text-slate-800">卡片編輯</h3>
-        <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+      <div class="flex justify-between items-center mb-4 border-b pb-3">
+        <h3 id="modalTitle" class="font-bold">卡片編輯</h3>
+        <button onclick="closeAddModal()" class="text-slate-400 text-2xl">×</button>
       </div>
       <form id="cardForm" class="space-y-4">
-        <input type="text" id="title" placeholder="卡片名稱" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="text" id="title" placeholder="卡片名稱" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none">
         <div class="grid grid-cols-2 gap-3">
-          <input type="text" id="code1D" placeholder="一維條碼號碼" class="px-3 py-2 border rounded-lg text-sm font-mono">
-          <input type="text" id="code2D" placeholder="二維碼 (QR) 號碼" class="px-3 py-2 border rounded-lg text-sm font-mono">
+          <input type="text" id="code1D" placeholder="條碼號碼" class="px-3 py-2 border rounded-lg text-sm font-mono">
+          <input type="text" id="code2D" placeholder="QR 號碼" class="px-3 py-2 border rounded-lg text-sm font-mono">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <input type="text" id="owner" placeholder="持有人" required class="px-3 py-2 border rounded-lg text-sm">
@@ -113,196 +119,141 @@
           <input type="date" id="expiryDate" class="px-3 py-2 border rounded-lg text-sm">
           <select id="canvasStyle" class="px-3 py-2 border rounded-lg text-sm bg-white">
             <option value="gradient">經典漸層</option>
-            <option value="chip">尊榮黑金</option>
-            <option value="pattern">幾何網格</option>
-            <option value="wave">流動水波</option>
+            <option value="chip">黑金晶片</option>
           </select>
         </div>
-        <div class="flex items-center gap-3">
-          <label class="text-xs font-bold text-slate-600">配色：</label>
-          <input type="color" id="cardColor" value="#2563eb" class="h-9 w-full rounded cursor-pointer border p-0.5">
-        </div>
+        <input type="color" id="cardColor" value="#2563eb" class="h-9 w-full rounded border p-0.5">
         
         <div class="grid grid-cols-2 gap-3">
-          <div class="relative border-2 border-dashed p-3 rounded-xl text-center bg-slate-50">
-            <div id="dropZone1D" onclick="document.getElementById('imageInput1D').click()" class="cursor-pointer">
-              <span class="text-[10px] font-bold block text-slate-500">條碼照片</span>
-              <input type="file" id="imageInput1D" accept="image/*" class="hidden">
-            </div>
-            <div id="imagePreviewContainer1D" class="hidden relative h-24 mt-1 bg-white border rounded overflow-hidden">
+          <div class="relative border-2 border-dashed p-3 rounded-xl text-center bg-slate-50 cursor-pointer" onclick="document.getElementById('imageInput1D').click()">
+            <span class="text-[10px] font-bold block">上傳條碼照片</span>
+            <input type="file" id="imageInput1D" accept="image/*" class="hidden">
+            <div id="imagePreviewContainer1D" class="hidden h-20 mt-1 bg-white border rounded relative">
               <img id="imagePreview1D" class="h-full w-full object-contain">
               <div class="preview-actions">
-                <button type="button" onclick="reCropExistingImage('1D')" class="btn-mini"><i class="fa-solid fa-crop"></i></button>
-                <button type="button" onclick="clearImagePreview('1D')" class="btn-mini"><i class="fa-solid fa-trash"></i></button>
+                <button type="button" onclick="event.stopPropagation(); reCropExistingImage('1D')" class="btn-mini">裁切</button>
               </div>
             </div>
           </div>
-          <div class="relative border-2 border-dashed p-3 rounded-xl text-center bg-slate-50">
-            <div id="dropZone2D" onclick="document.getElementById('imageInput2D').click()" class="cursor-pointer">
-              <span class="text-[10px] font-bold block text-slate-500">QR 照片</span>
-              <input type="file" id="imageInput2D" accept="image/*" class="hidden">
-            </div>
-            <div id="imagePreviewContainer2D" class="hidden relative h-24 mt-1 bg-white border rounded overflow-hidden">
+          <div class="relative border-2 border-dashed p-3 rounded-xl text-center bg-slate-50 cursor-pointer" onclick="document.getElementById('imageInput2D').click()">
+            <span class="text-[10px] font-bold block">上傳 QR 照片</span>
+            <input type="file" id="imageInput2D" accept="image/*" class="hidden">
+            <div id="imagePreviewContainer2D" class="hidden h-20 mt-1 bg-white border rounded relative">
               <img id="imagePreview2D" class="h-full w-full object-contain">
               <div class="preview-actions">
-                <button type="button" onclick="reCropExistingImage('2D')" class="btn-mini"><i class="fa-solid fa-crop"></i></button>
-                <button type="button" onclick="clearImagePreview('2D')" class="btn-mini"><i class="fa-solid fa-trash"></i></button>
+                <button type="button" onclick="event.stopPropagation(); reCropExistingImage('2D')" class="btn-mini">裁切</button>
               </div>
             </div>
           </div>
         </div>
-        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl shadow-lg">儲存並同步雲端</button>
+        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl shadow">儲存同步</button>
       </form>
     </div>
   </div>
 
-  <!-- [此處續接 scanModal, cropModal, syncSettingsModal, deleteModal ...] -->
-  <!-- 由於結構與上版相同，可直接套用原始檔案的 Modal HTML -->
+  <!-- 放大掃描 Modal -->
+  <div id="scanModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/90 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl text-center relative">
+      <button onclick="closeScanModal()" class="absolute right-4 top-4 text-slate-400 text-2xl">×</button>
+      <h3 id="scanTitle" class="text-2xl font-bold mb-4"></h3>
+      <div class="flex justify-center gap-2 mb-4">
+        <button id="scanBtn1D" onclick="switchScanBarcodeType('CODE128')" class="px-6 py-2 rounded-lg text-xs font-bold">條碼</button>
+        <button id="scanBtnQR" onclick="switchScanBarcodeType('QR')" class="px-6 py-2 rounded-lg text-xs font-bold">QR</button>
+      </div>
+      <canvas id="scanCanvas" class="w-full h-auto rounded-xl border shadow-inner mb-4"></canvas>
+      <button onclick="downloadCanvasPNG()" class="text-xs font-bold text-blue-600">下載圖片</button>
+    </div>
+  </div>
 
-  <!-- JavaScript 部分 -->
+  <!-- 裁切 Modal -->
+  <div id="cropModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/90 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl flex flex-col gap-4">
+      <h3 class="font-bold border-b pb-2">裁切條碼</h3>
+      <div class="relative bg-slate-900 h-[300px] flex items-center justify-center rounded-lg">
+        <img id="cropTargetImage" class="max-h-full">
+      </div>
+      <div class="flex justify-between">
+        <button onclick="rotateCropImage(-90)" class="bg-slate-100 p-2 rounded">左轉</button>
+        <button onclick="confirmCrop()" class="bg-blue-600 text-white px-8 py-2 rounded-xl font-bold">確認</button>
+        <button onclick="rotateCropImage(90)" class="bg-slate-100 p-2 rounded">右轉</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // --- 1. Supabase 初始化 ---
+    // --- 1. 初始化與配置 ---
     const SUPABASE_URL = 'https://msuwmgyvlcaodgpttfcr.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_h89jxsCmM3bcTKdHqr5WhA_vGvb-EhS';
-    const _db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let _db = null;
 
-    // --- 2. 狀態管理 ---
     window.cards = [];
-    let currentMainTab = 'all'; 
+    let currentMainTab = 'all';
     let editingCardId = null;
-    let pendingDeleteId = null;
     let currentScanCardId = null;
     let cropperInstance = null;
     let onCropSuccessCallback = null;
 
-    let currentUploadedImageData1D = '';
-    let currentUploadedImageData2D = '';
-    let currentRawImageData1D = '';
-    let currentRawImageData2D = '';
+    let currentUploadedImageData1D = '', currentUploadedImageData2D = '';
+    let currentRawImageData1D = '', currentRawImageData2D = '';
 
-    // --- 3. 核心過濾與渲染 (修正點在此) ---
-    function renderAllCards() {
-      const container = document.getElementById('cardGrid');
-      const searchVal = document.getElementById('searchInput').value.toLowerCase();
-      const ownerVal = document.getElementById('ownerFilter').value;
-      const catVal = document.getElementById('categoryFilter').value;
-      const expFilterVal = document.getElementById('expiryFilter').value;
-
-      // 執行過濾邏輯
-      const filtered = window.cards.filter(c => {
-        // A. 頂部標籤過濾 (全部 / 即將過期 / 有效)
-        const expStatus = getExpiryStatus(c.expiryDate);
-        let matchesTab = true;
-        if (currentMainTab === 'expiring') matchesTab = (expStatus.status !== 'valid');
-        if (currentMainTab === 'valid') matchesTab = (expStatus.status === 'valid');
-
-        // B. 搜尋文字過濾
-        const matchesSearch = c.title.toLowerCase().includes(searchVal) || 
-                              c.owner.toLowerCase().includes(searchVal) ||
-                              c.category.toLowerCase().includes(searchVal) ||
-                              c.code1D.toLowerCase().includes(searchVal) ||
-                              c.code2D.toLowerCase().includes(searchVal);
-
-        // C. 下拉選單過濾 (持有人、分類、狀態)
-        const matchesOwner = ownerVal === "" || c.owner === ownerVal;
-        const matchesCat = catVal === "" || c.category === catVal;
-        const matchesExpFilter = expFilterVal === "" || expStatus.status === expFilterVal;
-
-        return matchesTab && matchesSearch && matchesOwner && matchesCat && matchesExpFilter;
-      });
-
-      // 更新分頁計數
-      document.getElementById('countAll').innerText = window.cards.length;
-      document.getElementById('countExpiring').innerText = window.cards.filter(c => getExpiryStatus(c.expiryDate).status !== 'valid').length;
-      document.getElementById('countValid').innerText = window.cards.filter(c => getExpiryStatus(c.expiryDate).status === 'valid').length;
-
-      // 渲染 HTML
-      if (filtered.length === 0) {
-        container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-400">找不到符合條件的卡片</div>`;
-        return;
-      }
-
-      container.innerHTML = filtered.map(c => {
-        const exp = getExpiryStatus(c.expiryDate);
-        return `
-          <div class="bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col group">
-            <div class="p-3 flex justify-between border-b">
-              <span class="font-bold text-sm truncate">${c.title}</span>
-              <div class="flex gap-1">
-                <button onclick="openEditModal(event, ${c.id})" class="text-slate-400 hover:text-blue-600 p-1"><i class="fa-solid fa-pen-to-square"></i></button>
-                <button onclick="deleteCard(event, ${c.id})" class="text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash-can"></i></button>
-              </div>
-            </div>
-            <div class="p-3 bg-slate-50" onclick="openScanModal(${c.id})">
-              <div class="card-canvas-container"><canvas id="cvs_${c.id}" width="400" height="252"></canvas></div>
-            </div>
-            <div class="px-3 py-2 flex justify-between items-center text-[10px] font-bold">
-              <span class="bg-slate-100 px-2 py-0.5 rounded text-slate-500">${c.owner} | ${c.category}</span>
-              <span class="${exp.colorClass}">${exp.text}</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      // 繪製 Canvas (防止變形)
-      setTimeout(() => {
-        filtered.forEach(c => {
-          const cvs = document.getElementById(`cvs_${c.id}`);
-          if (cvs) drawCardCanvas(cvs, c);
-        });
-      }, 50);
-    }
-
-    // --- 4. 切換標籤函數 ---
-    window.switchMainTab = (tab) => {
-      currentMainTab = tab;
-      
-      // 更新按鈕樣式
-      const tabs = ['All', 'Expiring', 'Valid'];
-      tabs.forEach(t => {
-        const btn = document.getElementById('tab' + t);
-        if (t.toLowerCase() === tab) {
-          btn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-sm transition";
-        } else {
-          btn.className = "px-4 py-2 rounded-xl text-xs font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition";
-        }
-      });
-      renderAllCards();
-    };
-
-    // --- 5. 更新下拉選單選單內容 ---
-    window.updateDropdowns = () => {
-      const owners = [...new Set(window.cards.map(c => c.owner))].filter(Boolean);
-      const categories = [...new Set(window.cards.map(c => c.category))].filter(Boolean);
-
-      const ownerFilter = document.getElementById('ownerFilter');
-      const catFilter = document.getElementById('categoryFilter');
-
-      const currentOwner = ownerFilter.value;
-      const currentCat = catFilter.value;
-
-      ownerFilter.innerHTML = '<option value="">持有人</option>' + owners.map(o => `<option value="${o}" ${o===currentOwner?'selected':''}>${o}</option>`).join('');
-      catFilter.innerHTML = '<option value="">分類</option>' + categories.map(c => `<option value="${c}" ${c===currentCat?'selected':''}>${c}</option>`).join('');
-    };
-
-    // --- 6. 事件綁定 ---
-    window.addEventListener('DOMContentLoaded', () => {
+    // --- 2. 核心啟動邏輯 (防卡死設計) ---
+    window.onload = function() {
+      // 確保即使 SDK 出錯，介面按鈕也要能用
       window.currentSyncKey = localStorage.getItem('canvas_cards_sync_key') || 'common-wallet-room';
       document.getElementById('syncKeyInput').value = window.currentSyncKey;
-      
-      document.getElementById('cardForm').addEventListener('submit', handleCardFormSubmit);
-      
-      // 加入下拉選單的即時監聽
-      ['searchInput', 'ownerFilter', 'categoryFilter', 'expiryFilter'].forEach(id => {
-        document.getElementById(id).addEventListener('change', renderAllCards);
+
+      try {
+        _db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        initCloudSync();
+      } catch (err) {
+        console.error("Supabase 初始化失敗:", err);
+        updateCloudStatusUI(false, "離線模式");
+      }
+
+      // 綁定過濾器事件
+      ['searchInput', 'ownerFilter', 'categoryFilter'].forEach(id => {
         document.getElementById(id).addEventListener('input', renderAllCards);
+        document.getElementById(id).addEventListener('change', renderAllCards);
       });
-
+      
       setupImageUploadHandlers();
-      initCloudSync();
-    });
+      renderAllCards(); // 先渲染一次本機資料
+    };
 
-    // --- 7. Canvas 繪圖 (Contain 邏輯) ---
+    async function initCloudSync() {
+      if (!_db) return;
+      updateCloudStatusUI(false, "連線中...");
+      
+      try {
+        await fetchCardsFromCloud();
+        _db.channel('cards_room')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'cards', filter: `sync_key=eq.${window.currentSyncKey}` }, () => {
+            fetchCardsFromCloud();
+          })
+          .subscribe((status) => {
+            if (status === 'SUBSCRIBED') updateCloudStatusUI(true, `房號：${window.currentSyncKey}`);
+          });
+      } catch (e) {
+        updateCloudStatusUI(false, "連線失敗");
+      }
+    }
+
+    async function fetchCardsFromCloud() {
+      if (!_db) return;
+      const { data, error } = await _db.from('cards').select('*').eq('sync_key', window.currentSyncKey);
+      if (data) {
+        window.cards = data.map(dbRow => ({
+          id: parseInt(dbRow.id), title: dbRow.title, owner: dbRow.owner, category: dbRow.category,
+          code1D: dbRow.code1d||'', code2D: dbRow.code2d||'', activeBarcodeType: dbRow.active_barcode_type||'CODE128',
+          expiryDate: dbRow.expiry_date||'', cardColor: dbRow.card_color||'#2563eb', canvasStyle: dbRow.canvas_style||'gradient',
+          bgImage1D: dbRow.bg_image1d||'', bgImage2D: dbRow.bg_image2d||'', rawImage1D: dbRow.raw_image1d||'', rawImage2D: dbRow.raw_image2d||''
+        }));
+        updateDropdowns();
+        renderAllCards();
+      }
+    }
+
+    // --- 3. 繪圖核心 (防止變形) ---
     async function drawCardCanvas(canvas, card, isScan = false) {
       const ctx = canvas.getContext('2d');
       const w = canvas.width, h = canvas.height;
@@ -311,7 +262,7 @@
 
       if (!isScan) {
         ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.font = 'bold 24px sans-serif';
+        ctx.font = 'bold 22px sans-serif';
         ctx.fillText(card.title || '未命名', 20, 45);
       }
 
@@ -320,12 +271,11 @@
       const bgImgSrc = (activeType === 'QR' ? card.bgImage2D : card.bgImage1D);
 
       const margin = 15;
-      const boxH = isScan ? h - 40 : h * 0.65, boxY = h - boxH - margin, boxW = w - margin * 2;
+      const boxH = isScan ? h - 40 : h * 0.65, boxW = w - margin * 2;
+      const boxY = h - boxH - margin;
       
       ctx.fillStyle = '#ffffff';
-      if (ctx.roundRect) ctx.roundRect(margin, boxY, boxW, boxH, 10);
-      else ctx.fillRect(margin, boxY, boxW, boxH);
-      ctx.fill();
+      ctx.fillRect(margin, boxY, boxW, boxH);
 
       if (bgImgSrc) {
         const img = new Image();
@@ -344,90 +294,109 @@
       }
     }
 
-    // --- 8. Supabase 同步與其餘功能 (裁切、上傳、下載、Toast) ---
-    async function initCloudSync() {
-      updateCloudStatusUI(false, '連線中...');
-      await fetchCardsFromCloud();
-      _db.channel('cards_room').on('postgres_changes', { event:'*', schema:'public', table:'cards', filter:`sync_key=eq.${window.currentSyncKey}` }, () => { fetchCardsFromCloud(); }).subscribe();
+    // --- 4. 功能 UI 控制 ---
+    function renderAllCards() {
+      const container = document.getElementById('cardGrid');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const ownerF = document.getElementById('ownerFilter').value;
+      const catF = document.getElementById('categoryFilter').value;
+
+      const filtered = window.cards.filter(c => {
+        const status = getExpiryStatus(c.expiryDate).status;
+        if (currentMainTab === 'expiring' && status === 'valid') return false;
+        if (currentMainTab === 'valid' && status !== 'valid') return false;
+        
+        const matchesSearch = c.title.toLowerCase().includes(search) || c.owner.toLowerCase().includes(search);
+        const matchesOwner = ownerF === "" || c.owner === ownerF;
+        const matchesCat = catF === "" || c.category === catF;
+
+        return matchesSearch && matchesOwner && matchesCat;
+      });
+
+      document.getElementById('countAll').innerText = window.cards.length;
+      document.getElementById('countExpiring').innerText = window.cards.filter(c => getExpiryStatus(c.expiryDate).status !== 'valid').length;
+      document.getElementById('countValid').innerText = window.cards.filter(c => getExpiryStatus(c.expiryDate).status === 'valid').length;
+
+      container.innerHTML = filtered.map(c => `
+        <div class="bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col">
+          <div class="p-3 flex justify-between border-b items-center">
+            <span class="font-bold text-sm truncate">${c.title}</span>
+            <div class="flex gap-1">
+              <button onclick="openEditModal(event, ${c.id})" class="text-slate-400 p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+              <button onclick="deleteCard(event, ${c.id})" class="text-slate-400 p-1"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+          </div>
+          <div class="p-3 bg-slate-50" onclick="openScanModal(${c.id})">
+            <div class="card-canvas-container"><canvas id="cvs_${c.id}" width="400" height="252"></canvas></div>
+          </div>
+          <div class="px-3 py-2 text-[10px] font-bold text-slate-400">${c.owner} | ${c.category}</div>
+        </div>
+      `).join('');
+
+      setTimeout(() => filtered.forEach(c => drawCardCanvas(document.getElementById(`cvs_${c.id}`), c)), 50);
     }
 
-    async function fetchCardsFromCloud() {
-      const { data, error } = await _db.from('cards').select('*').eq('sync_key', window.currentSyncKey);
-      if (data) {
-        window.cards = data.map(dbRow => ({
-          id: parseInt(dbRow.id), title: dbRow.title, owner: dbRow.owner, category: dbRow.category,
-          code1D: dbRow.code1d||'', code2D: dbRow.code2d||'', activeBarcodeType: dbRow.active_barcode_type||'CODE128',
-          expiryDate: dbRow.expiry_date||'', cardColor: dbRow.card_color||'#2563eb', bgImage1D: dbRow.bg_image1d||'', 
-          bgImage2D: dbRow.bg_image2d||'', rawImage1D: dbRow.raw_image1d||'', rawImage2D: dbRow.raw_image2d||''
-        }));
-        updateDropdowns();
-        renderAllCards();
-        updateCloudStatusUI(true, `已連線：${window.currentSyncKey}`);
+    function openSyncSettingsModal() { 
+      document.getElementById('syncSettingsModal').classList.remove('hidden-modal');
+      document.getElementById('syncSettingsModal').classList.add('active-modal');
+    }
+    function closeSyncSettingsModal() { 
+      document.getElementById('syncSettingsModal').classList.remove('active-modal');
+      document.getElementById('syncSettingsModal').classList.add('hidden-modal');
+    }
+    function applyCustomSyncKey() {
+      const v = document.getElementById('syncKeyInput').value.trim();
+      if(v) {
+        localStorage.setItem('canvas_cards_sync_key', v);
+        window.location.reload();
       }
     }
 
-    window.saveCardToCloud = async function(card) {
-      const row = {
-        id: card.id, sync_key: window.currentSyncKey, title: card.title, owner: card.owner, category: card.category,
-        code1d: card.code1D, code2d: card.code2D, active_barcode_type: card.activeBarcodeType, expiry_date: card.expiryDate,
-        card_color: card.cardColor, bg_image1d: card.bgImage1D, bg_image2d: card.bgImage2D, raw_image1d: card.rawImage1D, raw_image2d: card.rawImage2D, updated_at: new Date()
-      };
-      const { error } = await _db.from('cards').upsert(row);
-      if (!error) showToast('☁️ 同步成功');
-    };
-
-    // --- 其餘輔助函數 (與上一版邏輯相同) ---
-    function getExpiryStatus(date) {
-      if (!date) return { status: 'valid', text: '永久', colorClass: 'text-slate-400' };
-      const diff = (new Date(date) - new Date()) / 86400000;
-      if (diff < 0) return { status: 'expired', text: '已過期', colorClass: 'text-rose-600' };
-      if (diff < 30) return { status: 'warning', text: '即將過期', colorClass: 'text-amber-500' };
-      return { status: 'valid', text: '有效', colorClass: 'text-emerald-600' };
-    }
-    function showToast(msg) {
-      const t = document.createElement('div'); t.className = 'fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2 rounded-xl text-xs z-[100] shadow-2xl';
-      t.innerText = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000);
-    }
-    function updateCloudStatusUI(isOnline, text) {
-      document.getElementById('cloudStatusText').innerText = text;
-      document.getElementById('cloudStatusDot').className = isOnline ? 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse' : 'w-2 h-2 rounded-full bg-slate-400';
-    }
-    function openScanModal(id) {
-      const c = window.cards.find(x => x.id === id); currentScanCardId = id;
-      document.getElementById('scanTitle').innerText = c.title; switchScanBarcodeType(c.activeBarcodeType || 'CODE128');
-      document.getElementById('scanModal').classList.add('active-modal');
-    }
-    function switchScanBarcodeType(type) {
-      const c = window.cards.find(x => x.id === currentScanCardId); c.activeBarcodeType = type;
-      document.getElementById('scanBtn1D').className = type==='CODE128' ? 'px-6 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white' : 'px-6 py-2 rounded-lg text-xs font-bold bg-white text-slate-500';
-      document.getElementById('scanBtnQR').className = type==='QR' ? 'px-6 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white' : 'px-6 py-2 rounded-lg text-xs font-bold bg-white text-slate-500';
-      drawCardCanvas(document.getElementById('scanCanvas'), c, true);
-    }
+    // --- 其餘輔助函式 (保留裁切與基本邏輯) ---
     function setupImageUploadHandlers() {
       ['imageInput1D', 'imageInput2D'].forEach(id => {
         document.getElementById(id).addEventListener('change', (e) => {
-          const file = e.target.files[0]; if (!file) return;
-          const reader = new FileReader(); reader.onload = (ev) => {
-            const raw = ev.target.result; if(id.includes('1D')) currentRawImageData1D = raw; else currentRawImageData2D = raw;
-            openCropModal(raw, (cropped) => {
-              if(id.includes('1D')) { currentUploadedImageData1D = cropped; document.getElementById('imagePreview1D').src = cropped; document.getElementById('imagePreviewContainer1D').classList.remove('hidden'); }
-              else { currentUploadedImageData2D = cropped; document.getElementById('imagePreview2D').src = cropped; document.getElementById('imagePreviewContainer2D').classList.remove('hidden'); }
-            });
-          }; reader.readAsDataURL(file);
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              const raw = ev.target.result;
+              if (id.includes('1D')) currentRawImageData1D = raw; else currentRawImageData2D = raw;
+              openCropModal(raw, (cropped) => {
+                if(id.includes('1D')) {
+                  currentUploadedImageData1D = cropped;
+                  document.getElementById('imagePreview1D').src = cropped;
+                  document.getElementById('imagePreviewContainer1D').classList.remove('hidden');
+                } else {
+                  currentUploadedImageData2D = cropped;
+                  document.getElementById('imagePreview2D').src = cropped;
+                  document.getElementById('imagePreviewContainer2D').classList.remove('hidden');
+                }
+              });
+            };
+            reader.readAsDataURL(file);
+          }
         });
       });
     }
-    function reCropExistingImage(type) {
-      const raw = (type === '1D') ? currentRawImageData1D : currentRawImageData2D;
-      if (raw) openCropModal(raw, (cropped) => {
-        if(type==='1D') { currentUploadedImageData1D = cropped; document.getElementById('imagePreview1D').src = cropped; }
-        else { currentUploadedImageData2D = cropped; document.getElementById('imagePreview2D').src = cropped; }
-      });
+
+    function openCropModal(url, cb) {
+      onCropSuccessCallback = cb;
+      document.getElementById('cropTargetImage').src = url;
+      document.getElementById('cropModal').classList.add('active-modal');
+      document.getElementById('cropModal').classList.remove('hidden-modal');
+      setTimeout(() => {
+        if (cropperInstance) cropperInstance.destroy();
+        cropperInstance = new Cropper(document.getElementById('cropTargetImage'), { aspectRatio: 400 / 252, viewMode: 1 });
+      }, 100);
     }
-    function clearImagePreview(type) {
-      if(type==='1D') { currentUploadedImageData1D = ''; currentRawImageData1D = ''; document.getElementById('imagePreviewContainer1D').classList.add('hidden'); }
-      else { currentUploadedImageData2D = ''; currentRawImageData2D = ''; document.getElementById('imagePreviewContainer2D').classList.add('hidden'); }
+
+    function confirmCrop() {
+      const data = cropperInstance.getCroppedCanvas({ width: 500 }).toDataURL('image/jpeg', 0.6);
+      onCropSuccessCallback(data);
+      closeCropModal();
     }
+
     function generateBarcodeImage(text, type) {
       return new Promise(resolve => {
         const cvs = document.createElement('canvas');
@@ -435,40 +404,82 @@
         else { try { JsBarcode(cvs, text, { format: "CODE128", displayValue: false }); resolve(cvs); } catch(e) { resolve(null); } }
       });
     }
-    function openEditModal(e, id) {
-      e.stopPropagation(); const c = window.cards.find(x => x.id === id); editingCardId = id;
-      document.getElementById('title').value = c.title; document.getElementById('code1D').value = c.code1D; document.getElementById('code2D').value = c.code2D;
-      document.getElementById('owner').value = c.owner; document.getElementById('category').value = c.category; document.getElementById('expiryDate').value = c.expiryDate;
-      document.getElementById('cardColor').value = c.cardColor; currentUploadedImageData1D = c.bgImage1D; currentRawImageData1D = c.rawImage1D;
-      currentUploadedImageData2D = c.bgImage2D; currentRawImageData2D = c.rawImage2D;
-      if(c.bgImage1D) { document.getElementById('imagePreview1D').src = c.bgImage1D; document.getElementById('imagePreviewContainer1D').classList.remove('hidden'); }
-      if(c.bgImage2D) { document.getElementById('imagePreview2D').src = c.bgImage2D; document.getElementById('imagePreviewContainer2D').classList.remove('hidden'); }
-      document.getElementById('addModal').classList.add('active-modal');
-    }
-    function handleCardFormSubmit(e) {
-      e.preventDefault(); const card = {
-        id: editingCardId || Date.now(), title: document.getElementById('title').value, code1D: document.getElementById('code1D').value,
-        code2D: document.getElementById('code2D').value, owner: document.getElementById('owner').value, category: document.getElementById('category').value,
+
+    async function handleCardFormSubmit(e) {
+      e.preventDefault();
+      const card = {
+        id: editingCardId || Date.now(), title: document.getElementById('title').value,
+        code1D: document.getElementById('code1D').value, code2D: document.getElementById('code2D').value,
+        owner: document.getElementById('owner').value, category: document.getElementById('category').value,
         expiryDate: document.getElementById('expiryDate').value, cardColor: document.getElementById('cardColor').value,
-        bgImage1D: currentUploadedImageData1D, bgImage2D: currentUploadedImageData2D, rawImage1D: currentRawImageData1D, rawImage2D: currentRawImageData2D,
+        canvasStyle: document.getElementById('canvasStyle').value,
+        bgImage1D: currentUploadedImageData1D, bgImage2D: currentUploadedImageData2D,
+        rawImage1D: currentRawImageData1D, rawImage2D: currentRawImageData2D,
         activeBarcodeType: document.getElementById('code1D').value || currentUploadedImageData1D ? 'CODE128' : 'QR'
-      }; window.saveCardToCloud(card); closeAddModal();
+      };
+      
+      const row = {
+        id: card.id, sync_key: window.currentSyncKey, title: card.title, owner: card.owner, category: card.category,
+        code1d: card.code1D, code2d: card.code2D, active_barcode_type: card.activeBarcodeType, expiry_date: card.expiry_date,
+        card_color: card.cardColor, bg_image1d: card.bgImage1D, bg_image2d: card.bgImage2D, raw_image1d: card.rawImage1D, raw_image2d: card.rawImage2D, updated_at: new Date()
+      };
+
+      const { error } = await _db.from('cards').upsert(row);
+      if(!error) showToast("雲端同步成功");
+      closeAddModal();
     }
-    
+
+    function updateCloudStatusUI(isOnline, text) {
+      document.getElementById('cloudStatusText').innerText = text;
+      document.getElementById('cloudStatusDot').className = isOnline ? 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse' : 'w-2 h-2 rounded-full bg-slate-400';
+    }
+
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2 rounded-xl text-xs z-[100]';
+      t.innerText = msg; document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    function getExpiryStatus(date) {
+      if (!date) return { status: 'valid', text: '永久', colorClass: 'text-slate-400' };
+      const diff = (new Date(date) - new Date()) / 86400000;
+      if (diff < 0) return { status: 'expired', text: '已過期', colorClass: 'text-rose-600' };
+      if (diff < 30) return { status: 'warning', text: '即將過期', colorClass: 'text-amber-500' };
+      return { status: 'valid', text: '有效', colorClass: 'text-emerald-600' };
+    }
+
+    function updateDropdowns() {
+      const owners = [...new Set(window.cards.map(c => c.owner))].filter(Boolean);
+      const cats = [...new Set(window.cards.map(c => c.category))].filter(Boolean);
+      document.getElementById('ownerFilter').innerHTML = '<option value="">持有人</option>' + owners.map(o => `<option value="${o}">${o}</option>`).join('');
+      document.getElementById('categoryFilter').innerHTML = '<option value="">分類</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
     // 全域導出
-    window.openAddModal = () => { editingCardId = null; document.getElementById('cardForm').reset(); clearImagePreview('1D'); clearImagePreview('2D'); document.getElementById('addModal').classList.add('active-modal'); };
-    window.closeAddModal = () => document.getElementById('addModal').classList.remove('active-modal');
-    window.closeScanModal = () => document.getElementById('scanModal').classList.remove('active-modal');
-    window.deleteCard = (e, id) => { e.stopPropagation(); pendingDeleteId = id; document.getElementById('deleteModal').classList.add('active-modal'); };
-    window.closeDeleteModal = () => document.getElementById('deleteModal').classList.remove('active-modal');
-    window.confirmDeleteCard = async () => { if(pendingDeleteId) { await _db.from('cards').delete().eq('id', pendingDeleteId); window.cards = window.cards.filter(c => c.id !== pendingDeleteId); renderAllCards(); } closeDeleteModal(); };
-    window.openSyncSettingsModal = () => document.getElementById('syncSettingsModal').classList.add('active-modal');
-    window.closeSyncSettingsModal = () => document.getElementById('syncSettingsModal').classList.remove('active-modal');
-    window.openCropModal = (url, cb) => { onCropSuccessCallback = cb; document.getElementById('cropTargetImage').src = url; document.getElementById('cropModal').classList.add('active-modal'); setTimeout(() => { if (cropperInstance) cropperInstance.destroy(); cropperInstance = new Cropper(document.getElementById('cropTargetImage'), { aspectRatio: 400 / 252, viewMode: 1 }); }, 100); };
-    window.closeCropModal = () => document.getElementById('cropModal').classList.remove('active-modal');
-    window.confirmCrop = () => { const data = cropperInstance.getCroppedCanvas({ width: 500 }).toDataURL('image/jpeg', 0.6); onCropSuccessCallback(data); closeCropModal(); };
+    window.switchMainTab = (t) => { currentMainTab = t; renderAllCards(); };
+    window.openAddModal = () => { editingCardId = null; document.getElementById('cardForm').reset(); document.getElementById('addModal').classList.add('active-modal'); document.getElementById('addModal').classList.remove('hidden-modal'); };
+    window.closeAddModal = () => { document.getElementById('addModal').classList.remove('active-modal'); document.getElementById('addModal').classList.add('hidden-modal'); };
+    window.openScanModal = (id) => { 
+      const c = window.cards.find(x => x.id === id); currentScanCardId = id;
+      document.getElementById('scanTitle').innerText = c.title; switchScanBarcodeType(c.activeBarcodeType || 'CODE128');
+      document.getElementById('scanModal').classList.add('active-modal'); document.getElementById('scanModal').classList.remove('hidden-modal');
+    };
+    window.closeScanModal = () => { document.getElementById('scanModal').classList.remove('active-modal'); document.getElementById('scanModal').classList.add('hidden-modal'); };
+    window.deleteCard = async (e, id) => { 
+      e.stopPropagation(); 
+      if(confirm("確定刪除？")) {
+        await _db.from('cards').delete().eq('id', id);
+        window.cards = window.cards.filter(c => c.id !== id);
+        renderAllCards();
+      }
+    };
+    window.closeCropModal = () => { document.getElementById('cropModal').classList.add('hidden-modal'); document.getElementById('cropModal').classList.remove('active-modal'); };
     window.rotateCropImage = (d) => cropperInstance.rotate(d);
-    window.applyCustomSyncKey = () => { const v = document.getElementById('syncKeyInput').value; if(v){ localStorage.setItem('canvas_cards_sync_key', v); location.reload(); } };
+    window.switchScanBarcodeType = (type) => {
+      const c = window.cards.find(x => x.id === currentScanCardId); c.activeBarcodeType = type;
+      drawCardCanvas(document.getElementById('scanCanvas'), c, true);
+    };
     window.downloadCanvasPNG = () => { const a = document.createElement('a'); a.download='card.png'; a.href=document.getElementById('scanCanvas').toDataURL(); a.click(); };
   </script>
 </body>
