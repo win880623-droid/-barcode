@@ -106,16 +106,15 @@
     <div class="max-w-5xl mx-auto px-4 py-3.5 flex items-center justify-between gap-4">
       <div class="flex items-center gap-2.5">
         <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
-          <i class="fa-solid fa-wallet"></i>
+          <i class="fa-solid fa-paintbrush"></i>
         </div>
         <div>
-          <h1 class="text-lg font-bold text-slate-800 leading-tight">會員卡與載具卡包</h1>
-          <p class="text-xs text-slate-500">Canvas 智慧管理與雙條碼獨立感應</p>
+          <h1 class="text-lg font-bold text-slate-800 leading-tight">Canvas 智慧會員卡包</h1>
+          <p class="text-xs text-slate-500">純 HTML5 Canvas 動態繪製與高畫質條碼管理</p>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
-        <!-- 雲端同步狀態標籤 -->
         <button onclick="openSyncSettingsModal()" id="syncStatusBadge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:opacity-90 transition cursor-pointer" title="點擊設定雲端同步與金鑰">
           <i class="fa-solid fa-cloud text-emerald-500"></i> 雲端同步中
         </button>
@@ -133,7 +132,6 @@
 
   <main class="max-w-5xl mx-auto px-4 mt-6 space-y-5">
 
-    <!-- 快選頁籤分類條 -->
     <div class="flex items-center gap-2 overflow-x-auto pb-1">
       <button id="tabAll" onclick="switchMainTab('all')" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap bg-blue-600 text-white shadow-sm">
         <i class="fa-solid fa-layer-group"></i>
@@ -154,7 +152,6 @@
       </button>
     </div>
 
-    <!-- 搜尋與細部過濾列 -->
     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3">
       <div class="relative flex-1">
         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -177,13 +174,11 @@
       </div>
     </div>
 
-    <!-- 卡片展示網格 -->
     <div id="cardGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
       <!-- 動態繪製卡片於此 -->
     </div>
   </main>
 
-  <!-- 新增/編輯卡片 Modal -->
   <div id="addModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4 border-b pb-3 sticky top-0 bg-white z-10">
@@ -198,7 +193,6 @@
           <datalist id="titleList"></datalist>
         </div>
 
-        <!-- 一維與二維條碼文字輸入區 -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">
@@ -233,24 +227,34 @@
             <input type="date" id="expiryDate" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-700">
           </div>
           <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Canvas 背景藝術樣式</label>
+            <select id="canvasStyle" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+              <option value="gradient">經典漸層 (Linear Gradient)</option>
+              <option value="chip">尊榮黑金 IC 晶片卡 (Black VIP)</option>
+              <option value="pattern">幾何幾何網格 (Geometric Pattern)</option>
+              <option value="wave">水波動態流線 (Wave Flow)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">卡片主題純色</label>
             <div class="flex items-center gap-2">
               <input type="color" id="cardColor" value="#2563eb" class="h-9 w-12 rounded cursor-pointer border p-0.5">
-              <span class="text-xs text-slate-500">（無底圖時使用）</span>
+              <span class="text-xs text-slate-500">（基底配色）</span>
             </div>
           </div>
         </div>
 
         <hr class="border-slate-200 my-2">
 
-        <!-- 獨立分開上傳 1D 一維條碼 與 2D QR Code 圖片區域 -->
         <div>
           <label class="block text-xs font-bold text-slate-800 mb-2">
             <i class="fa-solid fa-images text-blue-600 mr-1.5"></i>上傳條碼實體圖片（同張卡片可分開上傳兩張）
           </label>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <!-- 區塊 1：一維條碼圖片上傳 -->
             <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/80 hover:bg-slate-50 transition">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-xs font-bold text-slate-700 flex items-center gap-1">
@@ -258,7 +262,6 @@
                 </span>
               </div>
 
-              <!-- 上傳按鈕組 1D -->
               <div id="dropZone1D" class="border-2 border-dashed border-slate-300 rounded-lg p-2.5 text-center bg-white cursor-pointer hover:border-blue-400 transition" onclick="document.getElementById('imageInput1D').click()">
                 <input type="file" id="imageInput1D" accept="image/jpeg, image/png, image/webp, image/gif, image/heic, image/*" class="hidden">
                 <input type="file" id="cameraInput1D" accept="image/jpeg, image/png, image/webp, image/heic, image/*" capture="environment" class="hidden">
@@ -274,7 +277,6 @@
                 </div>
               </div>
 
-              <!-- 預覽區 1D -->
               <div id="imagePreviewContainer1D" class="hidden relative rounded-lg border border-slate-200 overflow-hidden bg-slate-900 h-24 flex items-center justify-center mt-2">
                 <img id="imagePreview1D" src="" class="max-h-full max-w-full object-contain">
                 <div class="absolute top-1 right-1 flex items-center gap-1">
@@ -288,7 +290,6 @@
               </div>
             </div>
 
-            <!-- 區塊 2：二維碼 (QR Code) 圖片上傳 -->
             <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/80 hover:bg-slate-50 transition">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-xs font-bold text-slate-700 flex items-center gap-1">
@@ -296,7 +297,6 @@
                 </span>
               </div>
 
-              <!-- 上傳按鈕組 2D -->
               <div id="dropZone2D" class="border-2 border-dashed border-slate-300 rounded-lg p-2.5 text-center bg-white cursor-pointer hover:border-emerald-400 transition" onclick="document.getElementById('imageInput2D').click()">
                 <input type="file" id="imageInput2D" accept="image/jpeg, image/png, image/webp, image/gif, image/heic, image/*" class="hidden">
                 <input type="file" id="cameraInput2D" accept="image/jpeg, image/png, image/webp, image/heic, image/*" capture="environment" class="hidden">
@@ -312,7 +312,6 @@
                 </div>
               </div>
 
-              <!-- 預覽區 2D -->
               <div id="imagePreviewContainer2D" class="hidden relative rounded-lg border border-slate-200 overflow-hidden bg-slate-900 h-24 flex items-center justify-center mt-2">
                 <img id="imagePreview2D" src="" class="max-h-full max-w-full object-contain">
                 <div class="absolute top-1 right-1 flex items-center gap-1">
@@ -329,13 +328,12 @@
         </div>
 
         <button type="submit" id="submitCardBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm transition mt-3 shadow">
-          合成並繪製卡片
+          Canvas 繪製並儲存卡片
         </button>
       </form>
     </div>
   </div>
 
-  <!-- 滿版掃描 Modal (Canvas 高清放大) -->
   <div id="scanModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl text-center relative">
       <button onclick="closeScanModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600 text-2xl">
@@ -345,7 +343,6 @@
       <h3 id="scanTitle" class="text-2xl font-bold text-slate-800 mb-1">卡片名稱</h3>
       <p id="scanMeta" class="text-xs text-slate-500 mb-3"></p>
 
-      <!-- 快速切換一維條碼 / QR Code 頁籤 -->
       <div id="scanBarcodeToggleGroup" class="flex justify-center items-center gap-2 mb-4 bg-slate-100 p-1.5 rounded-2xl w-fit mx-auto border border-slate-200">
         <button id="scanBtn1D" type="button" onclick="switchScanBarcodeType('CODE128')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
           <i class="fa-solid fa-barcode"></i> 一維條碼
@@ -359,23 +356,26 @@
         <canvas id="scanCanvas" width="600" height="378" class="w-full h-auto rounded-xl max-h-[60vh] object-contain"></canvas>
       </div>
 
-      <div class="text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl py-2 px-3 text-xs font-semibold flex items-center justify-center gap-2">
-        <i class="fa-solid fa-bolt"></i> 已提升螢幕對比度，請直接出示給店員掃描
+      <div class="flex items-center justify-between gap-3">
+        <button onclick="downloadCanvasPNG()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-4 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-download text-blue-600"></i> 下載 Canvas PNG
+        </button>
+        <div class="text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl py-2 px-3 text-xs font-semibold flex items-center justify-center gap-2 flex-1">
+          <i class="fa-solid fa-bolt"></i> 高對比度感應優化中
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 圖片手動裁切 Modal -->
   <div id="cropModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[60] flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl flex flex-col gap-4 max-h-[90vh]">
       <div class="flex justify-between items-center border-b pb-3">
         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-          <i class="fa-solid fa-crop text-blue-600"></i> 調整圖片區域 (自動適配與留白)
+          <i class="fa-solid fa-crop text-blue-600"></i> 調整圖片區域 (Canvas 適配)
         </h3>
         <button onclick="closeCropModal(false)" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
       </div>
       
-      <!-- 裁切模式選擇 -->
       <div class="flex items-center justify-between text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-200">
         <span class="font-semibold text-slate-700"><i class="fa-solid fa-sliders text-blue-500 mr-1"></i>裁切比例：</span>
         <div class="flex items-center gap-3">
@@ -415,7 +415,6 @@
     </div>
   </div>
 
-  <!-- 刪除確認 Modal -->
   <div id="deleteModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl text-center space-y-4">
       <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-xl">
@@ -436,19 +435,14 @@
     </div>
   </div>
 
-  <!-- 雲端同步與備份設定 Modal -->
   <div id="syncSettingsModal" class="modal-overlay hidden-modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-          <i class="fa-solid fa-cloud-arrow-up text-blue-600"></i> 公開網域雲端同步與備份設定
+          <i class="fa-solid fa-cloud-arrow-up text-blue-600"></i> 雲端同步與 Canvas 備份設定
         </h3>
         <button onclick="closeSyncSettingsModal()" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
       </div>
-
-      <p class="text-xs text-slate-500 leading-relaxed">
-        本應用支援在任意公開網域（GitHub Pages、Vercel 或個人網站）進行跨裝置即時同步。您可以設定專屬同步房號，或輸入您自己的 Firebase / Supabase 金鑰。
-      </p>
 
       <div class="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
         <label class="block text-xs font-bold text-slate-700">
@@ -460,7 +454,6 @@
             套用房號
           </button>
         </div>
-        <p class="text-[11px] text-slate-400">所有裝置輸入相同的同步房號即可自動共享並即時更新卡片庫。</p>
       </div>
 
       <div class="space-y-2 border-t pt-3">
@@ -470,12 +463,12 @@
         </label>
         <textarea id="firebaseConfigInput" rows="4" placeholder='{"apiKey": "...", "authDomain": "...", "projectId": "...", ...}' class="w-full p-2.5 text-xs font-mono border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-slate-900 text-slate-100"></textarea>
         <button type="button" onclick="saveCustomFirebaseConfig()" class="w-full bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-xl text-xs font-bold transition">
-          儲存並連線至我的 Firebase
+          儲存並連線 Firebase
         </button>
       </div>
 
       <div class="space-y-2 border-t pt-3">
-        <h4 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-file-export text-emerald-600 mr-1"></i> 離線卡片備份與匯入</h4>
+        <h4 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-file-export text-emerald-600 mr-1"></i> 離線 JSON 備份與匯入</h4>
         <div class="grid grid-cols-2 gap-2">
           <button type="button" onclick="exportCardsJSON()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1">
             <i class="fa-solid fa-download"></i> 匯出 JSON 備份檔
@@ -494,7 +487,6 @@
     import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // 預設卡片範例資料
     const DEFAULT_CARDS = [
       {
         id: 1,
@@ -506,6 +498,7 @@
         category: '超市賣場',
         expiryDate: '',
         cardColor: '#2563eb',
+        canvasStyle: 'chip',
         bgImage1D: '',
         bgImage2D: '',
         rawImage1D: '',
@@ -521,6 +514,7 @@
         category: '電子發票',
         expiryDate: '',
         cardColor: '#059669',
+        canvasStyle: 'gradient',
         bgImage1D: '',
         bgImage2D: '',
         rawImage1D: '',
@@ -536,51 +530,7 @@
         category: '便利商店',
         expiryDate: '',
         cardColor: '#e11d48',
-        bgImage1D: '',
-        bgImage2D: '',
-        rawImage1D: '',
-        rawImage2D: ''
-      },
-      {
-        id: 4,
-        title: '全家 FamilyMart 會員',
-        code1D: 'FM1234567890',
-        code2D: '',
-        activeBarcodeType: 'CODE128',
-        owner: '蛋',
-        category: '便利商店',
-        expiryDate: '',
-        cardColor: '#0284c7',
-        bgImage1D: '',
-        bgImage2D: '',
-        rawImage1D: '',
-        rawImage2D: ''
-      },
-      {
-        id: 5,
-        title: '家樂福 Carrefour 會員卡',
-        code1D: 'CF2026888899',
-        code2D: '',
-        activeBarcodeType: 'CODE128',
-        owner: '蛋',
-        category: '量販賣場',
-        expiryDate: '',
-        cardColor: '#1d4ed8',
-        bgImage1D: '',
-        bgImage2D: '',
-        rawImage1D: '',
-        rawImage2D: ''
-      },
-      {
-        id: 6,
-        title: 'HAPPY GO 點數卡',
-        code1D: 'HG8888123456',
-        code2D: '',
-        activeBarcodeType: 'CODE128',
-        owner: '蛋',
-        category: '綜合點數',
-        expiryDate: '',
-        cardColor: '#ea580c',
+        canvasStyle: 'pattern',
         bgImage1D: '',
         bgImage2D: '',
         rawImage1D: '',
@@ -593,7 +543,6 @@
     let auth = null;
     let isCloudEnabled = false;
 
-    // 取得自訂同步房號
     function getSyncRoomKey() {
       try {
         return localStorage.getItem('custom_sync_room_key') || appId;
@@ -624,9 +573,7 @@
       if (customFirebaseConfigRaw) {
         try {
           firebaseConfigToUse = JSON.parse(customFirebaseConfigRaw);
-        } catch(e) {
-          console.warn('自訂 Firebase Config 格式解析錯誤');
-        }
+        } catch(e) {}
       } else if (typeof __firebase_config !== 'undefined' && __firebase_config) {
         try {
           firebaseConfigToUse = JSON.parse(__firebase_config);
@@ -650,7 +597,7 @@
           setupFirestoreRealtimeListener();
           return;
         } catch (err) {
-          console.warn('Firebase 初始化失敗，切換 Supabase 備用:', err);
+          console.warn('Firebase 初始化失敗:', err);
         }
       }
 
@@ -699,47 +646,18 @@
         
         const { data, error } = await supabaseClient.from('cards').select('*').eq('room_key', roomKey);
         
-        if (error) {
-          const { data: fallbackData, error: fallbackError } = await supabaseClient.from('cards').select('*');
-          if (fallbackError) return false;
-          if (fallbackData && fallbackData.length > 0) {
-            cards = fallbackData.map(normalizeCard);
-            cards.sort((a, b) => (b.id || 0) - (a.id || 0));
-            saveCardsToStorage(cards);
-            updateDropdowns();
-            renderAllCards();
-          }
-        } else if (data && data.length > 0) {
+        if (!error && data && data.length > 0) {
           cards = data.map(normalizeCard);
           cards.sort((a, b) => (b.id || 0) - (a.id || 0));
           saveCardsToStorage(cards);
           updateDropdowns();
           renderAllCards();
-        } else if (cards.length > 0) {
-          for (const card of cards) {
-            await saveCardToSupabase(card);
-          }
         }
-
-        supabaseClient
-          .channel(`public:cards:${roomKey}`)
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'cards' }, async () => {
-            const { data: updated } = await supabaseClient.from('cards').select('*');
-            if (updated) {
-              cards = updated.map(normalizeCard);
-              cards.sort((a, b) => (b.id || 0) - (a.id || 0));
-              saveCardsToStorage(cards);
-              updateDropdowns();
-              renderAllCards();
-            }
-          })
-          .subscribe();
 
         isCloudEnabled = true;
         updateSyncStatusBadge('synced');
         return true;
       } catch (err) {
-        console.error('Supabase 初始化過程錯誤:', err);
         return false;
       }
     }
@@ -755,26 +673,8 @@
           await setDoc(cardDoc, card, { merge: true });
           updateSyncStatusBadge('synced');
         } catch (err) {
-          console.error('儲存至 Firebase 失敗:', err);
           updateSyncStatusBadge('error');
         }
-      } else if (supabaseClient) {
-        await saveCardToSupabase(card);
-      }
-    }
-
-    async function saveCardToSupabase(card) {
-      if (!supabaseClient) return;
-      try {
-        updateSyncStatusBadge('saving');
-        card.room_key = getSyncRoomKey();
-        const { error } = await supabaseClient.from('cards').upsert(card, { onConflict: 'id' });
-        if (error) throw error;
-        isCloudEnabled = true;
-        updateSyncStatusBadge('synced');
-      } catch (err) {
-        console.error('儲存至 Supabase 失敗:', err);
-        updateSyncStatusBadge('error');
       }
     }
 
@@ -787,17 +687,6 @@
           await deleteDoc(cardDoc);
           updateSyncStatusBadge('synced');
         } catch (err) {
-          console.error('從 Firebase 刪除失敗:', err);
-          updateSyncStatusBadge('error');
-        }
-      } else if (supabaseClient) {
-        try {
-          updateSyncStatusBadge('saving');
-          const { error } = await supabaseClient.from('cards').delete().eq('id', cardId);
-          if (error) throw error;
-          updateSyncStatusBadge('synced');
-        } catch (err) {
-          console.error('從 Supabase 刪除失敗:', err);
           updateSyncStatusBadge('error');
         }
       }
@@ -813,22 +702,17 @@
       } else if (status === 'saving') {
         badge.className = 'hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:opacity-90 transition cursor-pointer';
         badge.innerHTML = `<i class="fa-solid fa-arrows-rotate animate-spin text-blue-500"></i> 雲端儲存中...`;
-      } else if (status === 'error') {
-        badge.className = 'hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:opacity-90 transition cursor-pointer';
-        badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 本地備份模式`;
       } else {
         badge.className = 'hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 hover:opacity-90 transition cursor-pointer';
         badge.innerHTML = `<i class="fa-solid fa-hard-drive text-slate-400"></i> 本地儲存`;
       }
     }
 
-    // 安全 LocalStorage 存取
     function loadSavedCards() {
       try {
         const saved = localStorage.getItem('canvas_cards_v3');
         return saved ? JSON.parse(saved) : null;
       } catch (err) {
-        console.warn('LocalStorage 存取限制:', err);
         return null;
       }
     }
@@ -836,9 +720,7 @@
     function saveCardsToStorage(data) {
       try {
         localStorage.setItem('canvas_cards_v3', JSON.stringify(data));
-      } catch (err) {
-        console.warn('LocalStorage 寫入失敗:', err);
-      }
+      } catch (err) {}
     }
 
     let cards = loadSavedCards();
@@ -847,8 +729,8 @@
       saveCardsToStorage(cards);
     }
 
-    // 相容性歸一化
     function normalizeCard(c) {
+      if (!c.canvasStyle) c.canvasStyle = 'gradient';
       if (c.code1D === undefined && c.code2D === undefined) {
         if (c.barcodeType === 'QR') {
           c.code2D = c.code || '';
@@ -858,28 +740,228 @@
           c.code2D = '';
         }
       }
-
-      if (c.code1D && (c.code1D.startsWith('http://') || c.code1D.startsWith('https://'))) {
-        c.code1D = '';
-      }
-      if (c.code2D && (c.code2D.startsWith('http://') || c.code2D.startsWith('https://'))) {
-        c.code2D = '';
-      }
-
       if (c.bgImage1D === undefined) c.bgImage1D = c.bgImage || '';
       if (c.bgImage2D === undefined) c.bgImage2D = '';
       if (c.rawImage1D === undefined) c.rawImage1D = c.bgImage1D || c.bgImage || '';
       if (c.rawImage2D === undefined) c.rawImage2D = c.bgImage2D || '';
 
       if (!c.activeBarcodeType) {
-        c.activeBarcodeType = (c.code1D || c.bgImage1D) ? 'CODE128' : ((c.code2D || c.bgImage2D) ? 'QR' : 'CODE128');
+        c.activeBarcodeType = (c.code1D || c.bgImage1D) ? 'CODE128' : 'QR';
       }
       return c;
     }
 
     cards = cards.map(normalizeCard);
 
-    // 全域 DOM 與狀態
+    function getExpiryStatus(dateStr) {
+      if (!dateStr) return { status: 'valid', text: '無期限', colorClass: 'text-slate-500', bgClass: 'bg-slate-100' };
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const expDate = new Date(dateStr);
+      expDate.setHours(0, 0, 0, 0);
+      const diffTime = expDate - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays < 0) {
+        return { status: 'expired', text: '已過期', colorClass: 'text-rose-600', bgClass: 'bg-rose-100' };
+      } else if (diffDays <= 30) {
+        return { status: 'warning', text: `倒數 ${diffDays} 天`, colorClass: 'text-amber-600', bgClass: 'bg-amber-100' };
+      }
+      return { status: 'valid', text: '有效', colorClass: 'text-emerald-600', bgClass: 'bg-emerald-100' };
+    }
+
+    function switchMainTab(tab) {
+      currentMainTab = tab;
+      const tabs = ['all', 'expiring', 'valid'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (!btn) return;
+        if (t === tab) {
+          btn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap bg-blue-600 text-white shadow-sm';
+        } else {
+          btn.className = 'px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition flex items-center gap-2 whitespace-nowrap bg-white border border-slate-200';
+        }
+      });
+      renderAllCards();
+    }
+
+    function updateDropdowns() {
+      const owners = [...new Set(cards.map(c => c.owner).filter(Boolean))];
+      const categories = [...new Set(cards.map(c => c.category).filter(Boolean))];
+      const titles = [...new Set(cards.map(c => c.title).filter(Boolean))];
+
+      const ownerList = document.getElementById('ownerList');
+      if (ownerList) ownerList.innerHTML = owners.map(o => `<option value="${escapeHtml(o)}">`).join('');
+
+      const categoryList = document.getElementById('categoryList');
+      if (categoryList) categoryList.innerHTML = categories.map(c => `<option value="${escapeHtml(c)}">`).join('');
+
+      const titleList = document.getElementById('titleList');
+      if (titleList) titleList.innerHTML = titles.map(t => `<option value="${escapeHtml(t)}">`).join('');
+
+      if (ownerFilter) {
+        const currentOwner = ownerFilter.value;
+        ownerFilter.innerHTML = '<option value="">所有持有人</option>' + owners.map(o => `<option value="${escapeHtml(o)}" ${o === currentOwner ? 'selected' : ''}>${escapeHtml(o)}</option>`).join('');
+      }
+
+      if (categoryFilter) {
+        const currentCat = categoryFilter.value;
+        categoryFilter.innerHTML = '<option value="">所有種類標籤</option>' + categories.map(c => `<option value="${escapeHtml(c)}" ${c === currentCat ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('');
+      }
+    }
+
+    function saveAndRefresh() {
+      saveCardsToStorage(cards);
+      updateDropdowns();
+      renderAllCards();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function renderAllCards() {
+      if (!cardGrid) return;
+
+      const searchVal = (searchInput ? searchInput.value : '').toLowerCase().trim();
+      const ownerVal = ownerFilter ? ownerFilter.value : '';
+      const catVal = categoryFilter ? categoryFilter.value : '';
+      const expVal = expiryFilter ? expiryFilter.value : '';
+
+      let countAllNum = cards.length;
+      let countExpiringNum = 0;
+      let countValidNum = 0;
+
+      cards.forEach(card => {
+        const statusObj = getExpiryStatus(card.expiryDate);
+        if (statusObj.status === 'expired' || statusObj.status === 'warning') {
+          countExpiringNum++;
+        }
+        if (statusObj.status === 'valid') {
+          countValidNum++;
+        }
+      });
+
+      const countAllEl = document.getElementById('countAll');
+      const countExpiringEl = document.getElementById('countExpiring');
+      const countValidEl = document.getElementById('countValid');
+      if (countAllEl) countAllEl.innerText = countAllNum;
+      if (countExpiringEl) countExpiringEl.innerText = countExpiringNum;
+      if (countValidEl) countValidEl.innerText = countValidNum;
+
+      const filtered = cards.filter(card => {
+        const statusObj = getExpiryStatus(card.expiryDate);
+
+        if (currentMainTab === 'expiring' && statusObj.status !== 'expired' && statusObj.status !== 'warning') {
+          return false;
+        }
+        if (currentMainTab === 'valid' && statusObj.status !== 'valid') {
+          return false;
+        }
+
+        if (expVal && statusObj.status !== expVal) {
+          return false;
+        }
+
+        if (searchVal) {
+          const matchTitle = (card.title || '').toLowerCase().includes(searchVal);
+          const matchOwner = (card.owner || '').toLowerCase().includes(searchVal);
+          const matchCode1 = (card.code1D || '').toLowerCase().includes(searchVal);
+          const matchCode2 = (card.code2D || '').toLowerCase().includes(searchVal);
+          const matchCat = (card.category || '').toLowerCase().includes(searchVal);
+          if (!matchTitle && !matchOwner && !matchCode1 && !matchCode2 && !matchCat) {
+            return false;
+          }
+        }
+
+        if (ownerVal && card.owner !== ownerVal) return false;
+        if (catVal && card.category !== catVal) return false;
+
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        cardGrid.innerHTML = `
+          <div class="col-span-full py-12 text-center bg-white rounded-2xl border border-dashed border-slate-300 p-8">
+            <i class="fa-solid fa-credit-card text-4xl text-slate-300 mb-3 block"></i>
+            <p class="text-sm text-slate-500 font-medium">沒有找到符合條件的會員卡或載具</p>
+            <button onclick="openAddModal()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition">
+              <i class="fa-solid fa-plus mr-1"></i> 新增第一張卡片
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      cardGrid.innerHTML = filtered.map(card => {
+        const expStatus = getExpiryStatus(card.expiryDate);
+        return `
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition group">
+            <div class="p-3.5 pb-2 flex items-center justify-between border-b border-slate-100">
+              <div class="flex items-center gap-2 truncate">
+                <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${card.cardColor || '#2563eb'};"></span>
+                <h3 class="font-bold text-sm text-slate-800 truncate">${escapeHtml(card.title)}</h3>
+              </div>
+              <div class="flex items-center gap-1">
+                <button onclick="openEditModal(event, ${card.id})" class="text-slate-400 hover:text-blue-600 p-1.5 rounded-lg hover:bg-slate-100 transition text-xs" title="編輯">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button onclick="deleteCard(event, ${card.id})" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-slate-100 transition text-xs" title="刪除">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50/50 flex-1 flex flex-col justify-center">
+              <div class="card-canvas-container cursor-pointer rounded-xl overflow-hidden shadow-sm" onclick="openScanModal(${card.id})" title="點擊放大感應條碼">
+                <canvas id="cardCanvas_${card.id}" width="400" height="252"></canvas>
+              </div>
+            </div>
+
+            <div class="px-3.5 py-2.5 bg-white border-t border-slate-100 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2 text-slate-500 font-medium">
+                <span class="bg-slate-100 px-2 py-0.5 rounded-md font-semibold text-[11px] text-slate-700">${escapeHtml(card.owner)}</span>
+                <span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md text-[11px] font-semibold">${escapeHtml(card.category)}</span>
+              </div>
+              <div>
+                <span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${expStatus.bgClass} ${expStatus.colorClass}">
+                  ${expStatus.text}
+                </span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      setTimeout(() => {
+        filtered.forEach(card => {
+          const cvs = document.getElementById(`cardCanvas_${card.id}`);
+          if (cvs) drawCardCanvas(cvs, card);
+        });
+      }, 30);
+    }
+
+    function downloadCanvasPNG() {
+      const scanCanvas = document.getElementById('scanCanvas');
+      if (!scanCanvas) return;
+      const card = cards.find(c => c.id === currentScanCardId);
+      const fileName = card ? `card_${card.title}.png` : 'card_barcode.png';
+      
+      const link = document.createElement('a');
+      link.download = fileName;
+      link.href = scanCanvas.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      showToast('已下載條碼圖片');
+    }
+
     let cardGrid, cardForm, searchInput, ownerFilter, categoryFilter, expiryFilter;
     let imagePreview1D, imagePreview2D, imagePreviewContainer1D, imagePreviewContainer2D;
 
@@ -889,7 +971,6 @@
     let currentRawImageData2D = '';
 
     let currentMainTab = 'all';
-
     let cropperInstance = null;
     let onCropSuccessCallback = null;
     let editingCardId = null;
@@ -994,7 +1075,7 @@
       if (!file || !file.type.startsWith('image/')) return;
 
       try {
-        showToast('⚡ 正在優化與載入圖片...');
+        showToast('⚡ 正在載入與優化圖片...');
         const compressedDataUrl = await compressAndResizeImage(file, 1600);
         
         if (targetType === 'QR') {
@@ -1011,18 +1092,13 @@
           }
         });
       } catch (err) {
-        console.error('圖片處理失敗:', err);
-        showToast('❌ 圖片載入失敗，請嘗試選擇其他圖片');
+        showToast('❌ 圖片載入失敗');
       }
     }
 
     function openCropModal(imageUrl, callback) {
       onCropSuccessCallback = callback;
       const targetImg = document.getElementById('cropTargetImage');
-      
-      const fixedRadio = document.querySelector('input[name="cropAspect"][value="fixed"]');
-      if (fixedRadio) fixedRadio.checked = true;
-
       const cropModal = document.getElementById('cropModal');
       cropModal.classList.remove('hidden-modal');
       cropModal.classList.add('active-modal');
@@ -1032,27 +1108,16 @@
         cropperInstance = null;
       }
 
-      targetImg.onload = null;
-      
       setTimeout(() => {
         targetImg.onload = () => {
-          if (cropperInstance) {
-            cropperInstance.destroy();
-          }
+          if (cropperInstance) cropperInstance.destroy();
           cropperInstance = new Cropper(targetImg, {
             aspectRatio: 400 / 252,
             viewMode: 1,
             autoCropArea: 0.95,
             responsive: true,
             background: false,
-            checkOrientation: true,
-            cropBoxMovable: true,
-            cropBoxResizable: true,
-            dragMode: 'none',
-            toggleDragModeOnDblclick: false,
-            center: true,
-            highlight: true,
-            guides: true
+            checkOrientation: true
           });
         };
         targetImg.src = imageUrl;
@@ -1066,52 +1131,21 @@
     }
 
     function rotateCropImage(degree) {
-      if (cropperInstance) {
-        cropperInstance.rotate(degree);
-      }
+      if (cropperInstance) cropperInstance.rotate(degree);
     }
 
     function confirmCrop() {
       if (!cropperInstance) return;
-      
-      const isFixed = document.querySelector('input[name="cropAspect"][value="fixed"]')?.checked;
-
-      const croppedCanvas = cropperInstance.getCroppedCanvas({
-        fillColor: '#ffffff',
-        imageSmoothingEnabled: true,
-        imageSmoothingQuality: 'high'
-      });
-
+      const croppedCanvas = cropperInstance.getCroppedCanvas({ fillColor: '#ffffff' });
       if (!croppedCanvas) return;
 
       const targetCanvas = document.createElement('canvas');
       targetCanvas.width = 800;
       targetCanvas.height = 504;
       const ctx = targetCanvas.getContext('2d');
-
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, 800, 504);
-
-      if (isFixed) {
-        ctx.drawImage(croppedCanvas, 0, 0, 800, 504);
-      } else {
-        const imgRatio = croppedCanvas.width / croppedCanvas.height;
-        const canvasRatio = 800 / 504;
-        let drawW, drawH, drawX, drawY;
-
-        if (imgRatio > canvasRatio) {
-          drawW = 800;
-          drawH = 800 / imgRatio;
-          drawX = 0;
-          drawY = (504 - drawH) / 2;
-        } else {
-          drawH = 504;
-          drawW = 504 * imgRatio;
-          drawX = (800 - drawW) / 2;
-          drawY = 0;
-        }
-        ctx.drawImage(croppedCanvas, drawX, drawY, drawW, drawH);
-      }
+      ctx.drawImage(croppedCanvas, 0, 0, 800, 504);
 
       const croppedDataUrl = targetCanvas.toDataURL('image/jpeg', 0.92);
       closeCropModal(true);
@@ -1124,14 +1158,11 @@
         cropModal.classList.remove('active-modal');
         cropModal.classList.add('hidden-modal');
       }
-
       if (cropperInstance) {
         cropperInstance.destroy();
         cropperInstance = null;
       }
-      if (!isConfirmed) {
-        onCropSuccessCallback = null;
-      }
+      if (!isConfirmed) onCropSuccessCallback = null;
     }
 
     async function handleCropResultForModal(croppedImageDataUrl, targetType) {
@@ -1146,7 +1177,7 @@
       }
 
       const scanResult = await scanBarcodeFromImage(croppedImageDataUrl);
-      if (scanResult && scanResult.code && !scanResult.code.startsWith('http://') && !scanResult.code.startsWith('https://')) {
+      if (scanResult && scanResult.code && !scanResult.code.startsWith('http')) {
         if (targetType === 'QR' || scanResult.type === 'QR') {
           const input2D = document.getElementById('code2D');
           if (input2D && !input2D.value) input2D.value = scanResult.code;
@@ -1154,7 +1185,7 @@
           const input1D = document.getElementById('code1D');
           if (input1D && !input1D.value) input1D.value = scanResult.code;
         }
-        showToast(`已自動解碼並填入號碼：${scanResult.code}`);
+        showToast(`已自動辨識並填入卡號：${scanResult.code}`);
       }
     }
 
@@ -1174,9 +1205,7 @@
               codeDetected = barcodes[0].rawValue;
               detectedType = barcodes[0].format === 'qr_code' ? 'QR' : 'CODE128';
             }
-          } catch(err) {
-            console.log('BarcodeDetector info:', err);
-          }
+          } catch(err) {}
         }
 
         if (!codeDetected && typeof ZXing !== 'undefined') {
@@ -1188,23 +1217,13 @@
             const result = await codeReader.decodeFromImageElement(img);
             if (result && result.getText()) {
               codeDetected = result.getText();
-              const formatName = result.getBarcodeFormat() ? result.getBarcodeFormat().toString() : '';
-              detectedType = (formatName.includes('QR') || codeDetected.startsWith('http')) ? 'QR' : 'CODE128';
+              detectedType = codeDetected.startsWith('http') ? 'QR' : 'CODE128';
             }
-          } catch(err) {
-            console.log('ZXing decode info:', err);
-          }
+          } catch(err) {}
         }
 
-        if (codeDetected) {
-          if (codeDetected.startsWith('http://') || codeDetected.startsWith('https://')) {
-            return null;
-          }
-          return { code: codeDetected, type: detectedType };
-        }
-      } catch (e) {
-        console.warn('Barcode auto-scan info:', e);
-      }
+        if (codeDetected) return { code: codeDetected, type: detectedType };
+      } catch (e) {}
       return null;
     }
 
@@ -1214,361 +1233,6 @@
       toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> ${msg}`;
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 3500);
-    }
-
-    function reCropExistingImage(targetType) {
-      const rawData = targetType === '1D' 
-        ? (currentRawImageData1D || currentUploadedImageData1D) 
-        : (currentRawImageData2D || currentUploadedImageData2D);
-
-      if (!rawData) {
-        showToast('目前尚無圖片可進行裁切');
-        return;
-      }
-      openCropModal(rawData, (croppedDataUrl) => {
-        handleCropResultForModal(croppedDataUrl, targetType === '1D' ? 'CODE128' : 'QR');
-      });
-    }
-
-    function clearImagePreview(targetType) {
-      if (targetType === '1D') {
-        const input = document.getElementById('imageInput1D');
-        const cam = document.getElementById('cameraInput1D');
-        if (input) input.value = '';
-        if (cam) cam.value = '';
-        currentUploadedImageData1D = '';
-        currentRawImageData1D = '';
-        if (imagePreview1D) imagePreview1D.src = '';
-        if (imagePreviewContainer1D) imagePreviewContainer1D.classList.add('hidden');
-      } else if (targetType === '2D') {
-        const input = document.getElementById('imageInput2D');
-        const cam = document.getElementById('cameraInput2D');
-        if (input) input.value = '';
-        if (cam) cam.value = '';
-        currentUploadedImageData2D = '';
-        currentRawImageData2D = '';
-        if (imagePreview2D) imagePreview2D.src = '';
-        if (imagePreviewContainer2D) imagePreviewContainer2D.classList.add('hidden');
-      }
-    }
-
-    function handleCardFormSubmit(e) {
-      e.preventDefault();
-
-      const code1DVal = document.getElementById('code1D').value.trim();
-      const code2DVal = document.getElementById('code2D').value.trim();
-
-      const newCardData = {
-        title: document.getElementById('title').value.trim(),
-        code1D: code1DVal,
-        code2D: code2DVal,
-        activeBarcodeType: (code1DVal || currentUploadedImageData1D) ? 'CODE128' : ((code2DVal || currentUploadedImageData2D) ? 'QR' : 'CODE128'),
-        owner: document.getElementById('owner').value.trim() || '蛋',
-        category: document.getElementById('category').value.trim() || '會員卡',
-        expiryDate: document.getElementById('expiryDate').value,
-        cardColor: document.getElementById('cardColor').value,
-        bgImage1D: currentUploadedImageData1D,
-        bgImage2D: currentUploadedImageData2D,
-        rawImage1D: currentRawImageData1D,
-        rawImage2D: currentRawImageData2D
-      };
-
-      if (editingCardId !== null) {
-        const index = cards.findIndex(c => c.id === editingCardId);
-        if (index !== -1) {
-          newCardData.id = editingCardId;
-          cards[index] = { ...cards[index], ...newCardData };
-          saveCardToCloud(cards[index]);
-          showToast('已儲存變更並同步至雲端！');
-        }
-      } else {
-        newCardData.id = Date.now();
-        cards.unshift(newCardData);
-        saveCardToCloud(newCardData);
-        showToast('已新增卡片並同步至雲端！');
-      }
-
-      saveAndRefresh();
-      closeAddModal();
-    }
-
-    function saveAndRefresh() {
-      saveCardsToStorage(cards);
-      updateDropdowns();
-      renderAllCards();
-    }
-
-    function getExpiryStatus(dateStr) {
-      if (!dateStr) return { status: 'none', label: '無期限', badgeClass: 'bg-slate-100 text-slate-600' };
-      
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const exp = new Date(dateStr);
-      exp.setHours(0, 0, 0, 0);
-      
-      const diffTime = exp - today;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
-      if (diffDays < 0) {
-        return { status: 'expired', label: '已過期', badgeClass: 'bg-rose-100 text-rose-700 font-bold border border-rose-200' };
-      } else if (diffDays <= 30) {
-        return { status: 'warning', label: `剩 ${diffDays} 天到期`, badgeClass: 'bg-amber-100 text-amber-800 font-bold border border-amber-200' };
-      } else {
-        return { status: 'valid', label: `至 ${dateStr}`, badgeClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200' };
-      }
-    }
-
-    function updateDropdowns() {
-      if (!ownerFilter || !categoryFilter) return;
-      const owners = [...new Set(cards.map(c => c.owner).filter(Boolean))];
-      const categories = [...new Set(cards.map(c => c.category).filter(Boolean))];
-      const titles = [...new Set(cards.map(c => c.title).filter(Boolean))];
-
-      ownerFilter.innerHTML = '<option value="">所有持有人</option>' + owners.map(o => `<option value="${o}">${o}</option>`).join('');
-      categoryFilter.innerHTML = '<option value="">所有種類標籤</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('');
-
-      const ownerList = document.getElementById('ownerList');
-      const categoryList = document.getElementById('categoryList');
-      const titleList = document.getElementById('titleList');
-
-      if (ownerList) ownerList.innerHTML = owners.map(o => `<option value="${o}">`).join('');
-      if (categoryList) categoryList.innerHTML = categories.map(c => `<option value="${c}">`).join('');
-      if (titleList) titleList.innerHTML = titles.map(t => `<option value="${t}">`).join('');
-    }
-
-    function switchMainTab(tab) {
-      currentMainTab = tab;
-
-      const activeClass = 'px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap bg-blue-600 text-white shadow-sm';
-      const inactiveClass = 'px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition flex items-center gap-2 whitespace-nowrap bg-white border border-slate-200';
-
-      const btnAll = document.getElementById('tabAll');
-      const btnExpiring = document.getElementById('tabExpiring');
-      const btnValid = document.getElementById('tabValid');
-
-      if (btnAll) btnAll.className = (tab === 'all') ? activeClass : inactiveClass;
-      if (btnExpiring) btnExpiring.className = (tab === 'expiring') ? activeClass : inactiveClass;
-      if (btnValid) btnValid.className = (tab === 'valid') ? activeClass : inactiveClass;
-
-      renderAllCards();
-    }
-
-    function updateTabCounts() {
-      const total = cards.length;
-      let expiringCount = 0;
-      let validCount = 0;
-
-      cards.forEach(c => {
-        normalizeCard(c);
-        const exp = getExpiryStatus(c.expiryDate);
-        if (exp.status === 'warning' || exp.status === 'expired') {
-          expiringCount++;
-        } else {
-          validCount++;
-        }
-      });
-
-      const countAll = document.getElementById('countAll');
-      const countExpiring = document.getElementById('countExpiring');
-      const countValid = document.getElementById('countValid');
-
-      if (countAll) countAll.innerText = total;
-
-      if (countExpiring) {
-        countExpiring.innerText = expiringCount;
-        if (expiringCount > 0) {
-          countExpiring.className = 'px-1.5 py-0.5 rounded-full text-[10px] bg-rose-500 text-white font-bold animate-pulse';
-        } else {
-          countExpiring.className = 'px-1.5 py-0.5 rounded-full text-[10px] bg-slate-200 text-slate-600';
-        }
-      }
-
-      if (countValid) countValid.innerText = validCount;
-    }
-
-    function renderAllCards() {
-      if (!cardGrid) return;
-      
-      updateTabCounts();
-
-      const search = (searchInput ? searchInput.value : '').toLowerCase();
-      const selectedOwner = ownerFilter ? ownerFilter.value : '';
-      const selectedCategory = categoryFilter ? categoryFilter.value : '';
-      const selectedExpiry = expiryFilter ? expiryFilter.value : '';
-
-      const filtered = cards.filter(c => {
-        normalizeCard(c);
-        const matchSearch = c.title.toLowerCase().includes(search) || 
-                            (c.code1D && c.code1D.toLowerCase().includes(search)) || 
-                            (c.code2D && c.code2D.toLowerCase().includes(search)) || 
-                            c.owner.toLowerCase().includes(search);
-        const matchOwner = !selectedOwner || c.owner === selectedOwner;
-        const matchCategory = !selectedCategory || c.category === selectedCategory;
-        
-        const expiryInfo = getExpiryStatus(c.expiryDate);
-
-        let matchTab = true;
-        if (currentMainTab === 'expiring') {
-          matchTab = (expiryInfo.status === 'warning' || expiryInfo.status === 'expired');
-        } else if (currentMainTab === 'valid') {
-          matchTab = (expiryInfo.status === 'valid' || expiryInfo.status === 'none');
-        }
-
-        let matchExpiry = !selectedExpiry;
-        if (selectedExpiry === 'valid') {
-          matchExpiry = (expiryInfo.status === 'valid' || expiryInfo.status === 'none');
-        } else if (selectedExpiry) {
-          matchExpiry = (expiryInfo.status === selectedExpiry);
-        }
-
-        return matchSearch && matchOwner && matchCategory && matchTab && matchExpiry;
-      });
-
-      cardGrid.innerHTML = '';
-
-      if (filtered.length === 0) {
-        cardGrid.innerHTML = `
-          <div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-dashed border-slate-300">
-            <i class="fa-solid fa-folder-open text-4xl mb-2"></i>
-            <p class="text-sm">${currentMainTab === 'expiring' ? '太棒了！目前沒有即將到期或已過期的卡片' : '沒有找到符合條件的卡片或載具'}</p>
-          </div>
-        `;
-        return;
-      }
-
-      filtered.forEach(card => {
-        const item = document.createElement('div');
-        item.className = 'bg-white rounded-2xl p-3 shadow-sm border border-slate-200 flex flex-col gap-3';
-        
-        const canvasId = `canvas-${card.id}`;
-        const expiryInfo = getExpiryStatus(card.expiryDate);
-        const hasBothCodes = !!((card.code1D || card.bgImage1D) && (card.code2D || card.bgImage2D));
-
-        item.innerHTML = `
-          <div class="card-canvas-container cursor-pointer" onclick="openScanModal(${card.id})">
-            <canvas id="${canvasId}" width="400" height="252" class="w-full h-full block"></canvas>
-          </div>
-          <div class="flex items-center justify-between text-xs px-1">
-            <div class="flex flex-wrap gap-1.5 items-center">
-              <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium"><i class="fa-regular fa-user text-slate-400 mr-1"></i>${card.owner}</span>
-              <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium"><i class="fa-solid fa-tag text-slate-400 mr-1"></i>${card.category}</span>
-              <span class="${expiryInfo.badgeClass} px-2 py-0.5 rounded-md"><i class="fa-regular fa-clock mr-1"></i>${expiryInfo.label}</span>
-            </div>
-            <div class="flex items-center gap-1">
-              ${hasBothCodes ? `
-              <button onclick="toggleCardBarcodeType(event, ${card.id})" class="text-slate-400 hover:text-blue-600 p-1 transition" title="切換 1D條碼 / QR Code">
-                <i class="fa-solid fa-arrows-rotate"></i>
-              </button>
-              ` : ''}
-              <button onclick="openEditModal(event, ${card.id})" class="text-slate-400 hover:text-blue-600 p-1 transition" title="編輯卡片">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </button>
-              <button onclick="deleteCard(event, ${card.id})" class="text-slate-400 hover:text-rose-600 p-1 transition" title="刪除卡片">
-                <i class="fa-solid fa-trash-can"></i>
-              </button>
-            </div>
-          </div>
-        `;
-
-        cardGrid.appendChild(item);
-
-        setTimeout(() => {
-          const cvs = document.getElementById(canvasId);
-          if (cvs) drawCardCanvas(cvs, card);
-        }, 0);
-      });
-    }
-
-    function openScanModal(id) {
-      const card = cards.find(c => c.id === id);
-      if (!card) return;
-      normalizeCard(card);
-      currentScanCardId = id;
-
-      const has1D = !!(card.code1D || card.bgImage1D);
-      const has2D = !!(card.code2D || card.bgImage2D);
-
-      const toggleGroup = document.getElementById('scanBarcodeToggleGroup');
-
-      if (has1D && has2D) {
-        if (toggleGroup) toggleGroup.style.display = 'flex';
-      } else {
-        if (toggleGroup) toggleGroup.style.display = 'none';
-        if (has1D) card.activeBarcodeType = 'CODE128';
-        else if (has2D) card.activeBarcodeType = 'QR';
-      }
-
-      let displayCode = (card.activeBarcodeType === 'QR' ? card.code2D : card.code1D) || card.code1D || card.code2D || '';
-      if (displayCode.startsWith('http://') || displayCode.startsWith('https://')) {
-        displayCode = '';
-      }
-
-      document.getElementById('scanTitle').innerText = card.title;
-      document.getElementById('scanMeta').innerText = displayCode ? `號碼：${displayCode}` : '';
-
-      updateScanToggleButtons(card.activeBarcodeType || 'CODE128');
-
-      const scanCanvas = document.getElementById('scanCanvas');
-      drawCardCanvas(scanCanvas, card, true);
-
-      const modal = document.getElementById('scanModal');
-      if (modal) {
-        modal.classList.remove('hidden-modal');
-        modal.classList.add('active-modal');
-      }
-    }
-
-    function switchScanBarcodeType(type) {
-      if (!currentScanCardId) return;
-      const card = cards.find(c => c.id === currentScanCardId);
-      if (!card) return;
-
-      card.activeBarcodeType = type;
-      saveAndRefresh();
-
-      let displayCode = (type === 'QR' ? card.code2D : card.code1D) || '';
-      if (displayCode.startsWith('http://') || displayCode.startsWith('https://')) {
-        displayCode = '';
-      }
-
-      document.getElementById('scanMeta').innerText = displayCode ? `號碼：${displayCode}` : '';
-
-      updateScanToggleButtons(type);
-      const scanCanvas = document.getElementById('scanCanvas');
-      drawCardCanvas(scanCanvas, card, true);
-    }
-
-    function toggleCardBarcodeType(e, id) {
-      if (e) e.stopPropagation();
-      const card = cards.find(c => c.id === id);
-      if (!card) return;
-
-      card.activeBarcodeType = card.activeBarcodeType === 'QR' ? 'CODE128' : 'QR';
-      saveAndRefresh();
-      showToast(`已切換為${card.activeBarcodeType === 'QR' ? '二維碼 (QR Code)' : '一維條碼 (Code 128)'}`);
-    }
-
-    function updateScanToggleButtons(currentType) {
-      const btn1D = document.getElementById('scanBtn1D');
-      const btnQR = document.getElementById('scanBtnQR');
-      if (!btn1D || !btnQR) return;
-
-      if (currentType === 'QR') {
-        btn1D.className = 'px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
-        btnQR.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-blue-600 shadow-sm transition flex items-center gap-1.5';
-      } else {
-        btn1D.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-blue-600 shadow-sm transition flex items-center gap-1.5';
-        btnQR.className = 'px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
-      }
-    }
-
-    function closeScanModal() {
-      const modal = document.getElementById('scanModal');
-      if (modal) {
-        modal.classList.remove('active-modal');
-        modal.classList.add('hidden-modal');
-      }
-      currentScanCardId = null;
     }
 
     async function drawCardCanvas(canvas, cardData, isScanView = false) {
@@ -1595,34 +1259,37 @@
       const targetBgImage = (activeType === 'QR' ? cardData.bgImage2D : cardData.bgImage1D) || cardData.bgImage1D || cardData.bgImage2D || '';
       const hasBgImage = !!targetBgImage;
 
-      drawDefaultGradient(ctx, width, height, isScanView ? '#ffffff' : cardData.cardColor);
+      // 繪製高級 Canvas 藝術背景
+      drawCanvasBackground(ctx, width, height, isScanView ? '#ffffff' : cardData.cardColor, cardData.canvasStyle, isScanView);
 
+      // 繪製卡片標題與裝飾資訊
       if (!isScanView) {
         const titleFontSize = Math.max(14, Math.round(width * 0.045));
         const subFontSize = Math.max(10, Math.round(width * 0.028));
 
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
         ctx.shadowBlur = 4;
         ctx.fillStyle = '#ffffff';
         ctx.font = `bold ${titleFontSize}px sans-serif`;
-        ctx.fillText(cardData.title, 16, titleFontSize + 8);
+        ctx.fillText(cardData.title, 16, titleFontSize + 10);
 
         ctx.font = `${subFontSize}px sans-serif`;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-        ctx.fillText(`持有人：${cardData.owner} · ${cardData.category}`, 16, titleFontSize + subFontSize + 14);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.fillText(`持有人：${cardData.owner} · ${cardData.category}`, 16, titleFontSize + subFontSize + 16);
 
         if (cardData.expiryDate) {
           const expStatus = getExpiryStatus(cardData.expiryDate);
           ctx.font = `bold ${subFontSize}px sans-serif`;
           ctx.textAlign = 'right';
           ctx.fillStyle = expStatus.status === 'expired' ? '#fca5a5' : '#e2e8f0';
-          ctx.fillText(`效期: ${cardData.expiryDate}`, width - 16, titleFontSize + 8);
+          ctx.fillText(`效期: ${cardData.expiryDate}`, width - 16, titleFontSize + 10);
           ctx.textAlign = 'left';
         }
 
         ctx.shadowBlur = 0;
       }
 
+      // 條碼展示白框與渲染
       const activeCode = (activeType === 'QR' ? cardData.code2D : cardData.code1D) || cardData.code1D || cardData.code2D || '';
       const margin = isScanView ? 12 : 10;
       const boxHeight = isScanView ? height - (margin * 2) : height * 0.65;
@@ -1668,9 +1335,7 @@
             ctx.fillText(activeCode, width / 2, boxY + boxHeight - 6);
             ctx.textAlign = 'left';
           }
-        } catch (e) {
-          console.warn('載入條碼圖片失敗', e);
-        }
+        } catch (e) {}
       } else if (activeCode) {
         const barcodeImg = await generateBarcodeImage(activeCode, activeType);
         if (barcodeImg) {
@@ -1705,19 +1370,64 @@
             ctx.fillText(activeCode, width / 2, boxY + boxHeight - 6);
             ctx.textAlign = 'left';
           }
-        } else {
-          ctx.fillStyle = '#0f172a';
-          ctx.font = `bold ${Math.max(13, Math.round(width * 0.04))}px monospace`;
-          ctx.textAlign = 'center';
-          ctx.fillText(activeCode, width / 2, boxY + boxHeight / 2 + 5);
-          ctx.textAlign = 'left';
         }
       } else {
         ctx.fillStyle = '#334155';
         ctx.font = `bold ${Math.max(11, Math.round(width * 0.032))}px sans-serif`;
         ctx.textAlign = 'center';
-        ctx.fillText('📷 請填寫卡號或上傳條碼圖片', width / 2, boxY + boxHeight / 2);
+        ctx.fillText('📷 請填寫號碼或上傳條碼圖片', width / 2, boxY + boxHeight / 2);
         ctx.textAlign = 'left';
+      }
+    }
+
+    function drawCanvasBackground(ctx, width, height, baseColor, style, isScanView) {
+      if (isScanView) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        return;
+      }
+
+      const gradient = ctx.createLinearGradient(0, 0, width, height);
+      gradient.addColorStop(0, baseColor);
+      gradient.addColorStop(1, adjustColor(baseColor, -50));
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      if (style === 'chip') {
+        // 繪製金屬 IC 晶片 (Canvas 原生繪製)
+        const chipX = width - 52;
+        const chipY = 16;
+        const chipW = 36;
+        const chipH = 26;
+        ctx.fillStyle = '#f59e0b';
+        roundRect(ctx, chipX, chipY, chipW, chipH, 4, true, false);
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(chipX + 12, chipY); ctx.lineTo(chipX + 12, chipY + chipH);
+        ctx.moveTo(chipX + 24, chipY); ctx.lineTo(chipX + 24, chipY + chipH);
+        ctx.moveTo(chipX, chipY + 13); ctx.lineTo(chipX + chipW, chipY + 13);
+        ctx.stroke();
+      } else if (style === 'pattern') {
+        // 幾何圓點網格
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        for (let x = 10; x < width; x += 16) {
+          for (let y = 10; y < height; y += 16) {
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      } else if (style === 'wave') {
+        // 流動水波紋
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+        ctx.beginPath();
+        ctx.moveTo(0, height * 0.4);
+        ctx.bezierCurveTo(width * 0.3, height * 0.1, width * 0.7, height * 0.7, width, height * 0.3);
+        ctx.lineTo(width, height);
+        ctx.lineTo(0, height);
+        ctx.closePath();
+        ctx.fill();
       }
     }
 
@@ -1727,20 +1437,13 @@
         if (type === 'QR') {
           if (typeof QRious !== 'undefined') {
             try {
-              const qr = new QRious({
-                element: tempCanvas,
-                value: codeText,
-                size: 300,
-                level: 'H'
-              });
+              new QRious({ element: tempCanvas, value: codeText, size: 300, level: 'H' });
               const img = new Image();
               img.onload = () => resolve(img);
               img.onerror = () => resolve(null);
               img.src = tempCanvas.toDataURL();
               return;
-            } catch (e) {
-              console.warn('QRious generation error:', e);
-            }
+            } catch (e) {}
           }
           resolve(null);
         } else {
@@ -1762,20 +1465,9 @@
             } else {
               resolve(null);
             }
-          } catch (e) {
-            console.warn('JsBarcode generation error:', e);
-            resolve(null);
-          }
+          } catch (e) { resolve(null); }
         }
       });
-    }
-
-    function drawDefaultGradient(ctx, width, height, baseColor) {
-      const gradient = ctx.createLinearGradient(0, 0, width, height);
-      gradient.addColorStop(0, baseColor || '#2563eb');
-      gradient.addColorStop(1, adjustColor(baseColor || '#2563eb', -40));
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
     }
 
     function roundRect(ctx, x, y, w, h, r, fill, stroke) {
@@ -1799,36 +1491,144 @@
       return '#' + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
     }
 
+    function handleCardFormSubmit(e) {
+      e.preventDefault();
+
+      const code1DVal = document.getElementById('code1D').value.trim();
+      const code2DVal = document.getElementById('code2D').value.trim();
+
+      const newCardData = {
+        title: document.getElementById('title').value.trim(),
+        code1D: code1DVal,
+        code2D: code2DVal,
+        activeBarcodeType: (code1DVal || currentUploadedImageData1D) ? 'CODE128' : 'QR',
+        owner: document.getElementById('owner').value.trim() || '蛋',
+        category: document.getElementById('category').value.trim() || '會員卡',
+        expiryDate: document.getElementById('expiryDate').value,
+        cardColor: document.getElementById('cardColor').value,
+        canvasStyle: document.getElementById('canvasStyle').value,
+        bgImage1D: currentUploadedImageData1D,
+        bgImage2D: currentUploadedImageData2D,
+        rawImage1D: currentRawImageData1D,
+        rawImage2D: currentRawImageData2D
+      };
+
+      if (editingCardId !== null) {
+        const index = cards.findIndex(c => c.id === editingCardId);
+        if (index !== -1) {
+          newCardData.id = editingCardId;
+          cards[index] = { ...cards[index], ...newCardData };
+          saveCardToCloud(cards[index]);
+          showToast('已儲存變更並同步雲端');
+        }
+      } else {
+        newCardData.id = Date.now();
+        cards.unshift(newCardData);
+        saveCardToCloud(newCardData);
+        showToast('已新增卡片並同步雲端');
+      }
+
+      saveAndRefresh();
+      closeAddModal();
+    }
+
+    function reCropExistingImage(type) {
+      const is1D = type === '1D';
+      const rawImage = is1D ? (currentRawImageData1D || currentUploadedImageData1D) : (currentRawImageData2D || currentUploadedImageData2D);
+      
+      if (!rawImage) {
+        showToast('⚠️ 無可重新裁切的圖片');
+        return;
+      }
+
+      openCropModal(rawImage, (croppedDataUrl) => {
+        handleCropResultForModal(croppedDataUrl, is1D ? 'CODE128' : 'QR');
+      });
+    }
+
+    function clearImagePreview(type) {
+      if (type === '1D') {
+        currentUploadedImageData1D = '';
+        currentRawImageData1D = '';
+        if (imagePreview1D) imagePreview1D.src = '';
+        if (imagePreviewContainer1D) imagePreviewContainer1D.classList.add('hidden');
+      } else {
+        currentUploadedImageData2D = '';
+        currentRawImageData2D = '';
+        if (imagePreview2D) imagePreview2D.src = '';
+        if (imagePreviewContainer2D) imagePreviewContainer2D.classList.add('hidden');
+      }
+    }
+
+    function switchScanBarcodeType(type) {
+      if (!currentScanCardId) return;
+      const card = cards.find(c => c.id === currentScanCardId);
+      if (!card) return;
+
+      card.activeBarcodeType = type;
+      
+      const btn1D = document.getElementById('scanBtn1D');
+      const btnQR = document.getElementById('scanBtnQR');
+      
+      const activeClass = 'px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-blue-600 text-white shadow-sm';
+      const inactiveClass = 'px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-white text-slate-600 hover:bg-slate-200';
+
+      if (btn1D && btnQR) {
+        if (type === 'CODE128') {
+          btn1D.className = activeClass;
+          btnQR.className = inactiveClass;
+        } else {
+          btn1D.className = inactiveClass;
+          btnQR.className = activeClass;
+        }
+      }
+
+      const scanCanvas = document.getElementById('scanCanvas');
+      if (scanCanvas) drawCardCanvas(scanCanvas, card, true);
+    }
+
+    function openScanModal(id) {
+      const card = cards.find(c => c.id === id);
+      if (!card) return;
+      currentScanCardId = id;
+      document.getElementById('scanTitle').innerText = card.title;
+      document.getElementById('scanMeta').innerText = `持有人：${card.owner}`;
+
+      switchScanBarcodeType(card.activeBarcodeType || 'CODE128');
+
+      const modal = document.getElementById('scanModal');
+      modal.classList.remove('hidden-modal');
+      modal.classList.add('active-modal');
+    }
+
+    function closeScanModal() {
+      const modal = document.getElementById('scanModal');
+      if (modal) {
+        modal.classList.remove('active-modal');
+        modal.classList.add('hidden-modal');
+      }
+      currentScanCardId = null;
+    }
+
     function openAddModal() {
       editingCardId = null;
-      const modalTitle = document.getElementById('modalTitle');
-      const submitBtn = document.getElementById('submitCardBtn');
-      if (modalTitle) modalTitle.innerHTML = '<i class="fa-solid fa-credit-card text-blue-600 mr-2"></i>新增會員卡 / 載具';
-      if (submitBtn) submitBtn.innerText = '合成並繪製卡片';
+      currentUploadedImageData1D = '';
+      currentUploadedImageData2D = '';
+      currentRawImageData1D = '';
+      currentRawImageData2D = '';
+      if (imagePreviewContainer1D) imagePreviewContainer1D.classList.add('hidden');
+      if (imagePreviewContainer2D) imagePreviewContainer2D.classList.add('hidden');
       if (cardForm) cardForm.reset();
-      const ownerInput = document.getElementById('owner');
-      if (ownerInput) ownerInput.value = '蛋';
-      clearImagePreview('1D');
-      clearImagePreview('2D');
-
       const modal = document.getElementById('addModal');
-      if (modal) {
-        modal.classList.remove('hidden-modal');
-        modal.classList.add('active-modal');
-      }
+      modal.classList.remove('hidden-modal');
+      modal.classList.add('active-modal');
     }
 
     function openEditModal(e, id) {
       if (e) e.stopPropagation();
       const card = cards.find(c => c.id === id);
       if (!card) return;
-      normalizeCard(card);
-
       editingCardId = id;
-      const modalTitle = document.getElementById('modalTitle');
-      const submitBtn = document.getElementById('submitCardBtn');
-      if (modalTitle) modalTitle.innerHTML = '<i class="fa-solid fa-pen-to-square text-blue-600 mr-2"></i>編輯會員卡 / 載具';
-      if (submitBtn) submitBtn.innerText = '儲存卡片變更';
 
       document.getElementById('title').value = card.title || '';
       document.getElementById('code1D').value = card.code1D || '';
@@ -1837,129 +1637,104 @@
       document.getElementById('category').value = card.category || '';
       document.getElementById('expiryDate').value = card.expiryDate || '';
       document.getElementById('cardColor').value = card.cardColor || '#2563eb';
+      document.getElementById('canvasStyle').value = card.canvasStyle || 'gradient';
 
-      if (card.bgImage1D) {
-        currentUploadedImageData1D = card.bgImage1D;
-        currentRawImageData1D = card.rawImage1D || card.bgImage1D;
-        if (imagePreview1D) imagePreview1D.src = card.bgImage1D;
-        if (imagePreviewContainer1D) imagePreviewContainer1D.classList.remove('hidden');
-      } else {
-        clearImagePreview('1D');
+      currentUploadedImageData1D = card.bgImage1D || '';
+      currentUploadedImageData2D = card.bgImage2D || '';
+      currentRawImageData1D = card.rawImage1D || card.bgImage1D || '';
+      currentRawImageData2D = card.rawImage2D || card.bgImage2D || '';
+
+      if (currentUploadedImageData1D && imagePreview1D && imagePreviewContainer1D) {
+        imagePreview1D.src = currentUploadedImageData1D;
+        imagePreviewContainer1D.classList.remove('hidden');
+      } else if (imagePreviewContainer1D) {
+        imagePreviewContainer1D.classList.add('hidden');
       }
 
-      if (card.bgImage2D) {
-        currentUploadedImageData2D = card.bgImage2D;
-        currentRawImageData2D = card.rawImage2D || card.bgImage2D;
-        if (imagePreview2D) imagePreview2D.src = card.bgImage2D;
-        if (imagePreviewContainer2D) imagePreviewContainer2D.classList.remove('hidden');
-      } else {
-        clearImagePreview('2D');
+      if (currentUploadedImageData2D && imagePreview2D && imagePreviewContainer2D) {
+        imagePreview2D.src = currentUploadedImageData2D;
+        imagePreviewContainer2D.classList.remove('hidden');
+      } else if (imagePreviewContainer2D) {
+        imagePreviewContainer2D.classList.add('hidden');
       }
 
       const modal = document.getElementById('addModal');
-      if (modal) {
-        modal.classList.remove('hidden-modal');
-        modal.classList.add('active-modal');
-      }
+      modal.classList.remove('hidden-modal');
+      modal.classList.add('active-modal');
     }
 
     function closeAddModal() {
       const modal = document.getElementById('addModal');
-      if (modal) {
-        modal.classList.remove('active-modal');
-        modal.classList.add('hidden-modal');
-      }
-      editingCardId = null;
-      if (cardForm) cardForm.reset();
-      clearImagePreview('1D');
-      clearImagePreview('2D');
+      modal.classList.remove('active-modal');
+      modal.classList.add('hidden-modal');
     }
 
     function deleteCard(e, id) {
       if (e) e.stopPropagation();
       pendingDeleteId = id;
       const modal = document.getElementById('deleteModal');
-      if (modal) {
-        modal.classList.remove('hidden-modal');
-        modal.classList.add('active-modal');
-      }
+      modal.classList.remove('hidden-modal');
+      modal.classList.add('active-modal');
     }
 
     function closeDeleteModal() {
       pendingDeleteId = null;
       const modal = document.getElementById('deleteModal');
-      if (modal) {
-        modal.classList.remove('active-modal');
-        modal.classList.add('hidden-modal');
-      }
+      modal.classList.remove('active-modal');
+      modal.classList.add('hidden-modal');
     }
 
     function confirmDeleteCard() {
       if (pendingDeleteId !== null) {
-        const idToDelete = pendingDeleteId;
-        cards = cards.filter(c => c.id !== idToDelete);
-        deleteCardFromCloud(idToDelete);
+        cards = cards.filter(c => c.id !== pendingDeleteId);
+        deleteCardFromCloud(pendingDeleteId);
         saveAndRefresh();
-        showToast('已成功刪除卡片並同步至雲端');
+        showToast('已刪除卡片');
       }
       closeDeleteModal();
     }
 
     function openSyncSettingsModal() {
       const modal = document.getElementById('syncSettingsModal');
-      const roomInput = document.getElementById('syncRoomInput');
-      const fbInput = document.getElementById('firebaseConfigInput');
-
-      if (roomInput) roomInput.value = getSyncRoomKey();
-      if (fbInput) fbInput.value = localStorage.getItem('custom_firebase_config') || '';
-
-      if (modal) {
-        modal.classList.remove('hidden-modal');
-        modal.classList.add('active-modal');
-      }
+      document.getElementById('syncRoomInput').value = getSyncRoomKey();
+      modal.classList.remove('hidden-modal');
+      modal.classList.add('active-modal');
     }
 
     function closeSyncSettingsModal() {
       const modal = document.getElementById('syncSettingsModal');
-      if (modal) {
-        modal.classList.remove('active-modal');
-        modal.classList.add('hidden-modal');
-      }
+      modal.classList.remove('active-modal');
+      modal.classList.add('hidden-modal');
     }
 
     function saveSyncRoomKey() {
       const val = document.getElementById('syncRoomInput').value.trim();
-      if (!val) {
-        showToast('請輸入有效的同步房號');
-        return;
+      if (val) {
+        localStorage.setItem('custom_sync_room_key', val);
+        showToast(`已切換房號至：${val}`);
+        initCloudStorage();
+        closeSyncSettingsModal();
       }
-      localStorage.setItem('custom_sync_room_key', val);
-      showToast(`已切換同步房號至：${val}，重新初始化雲端連線...`);
-      initCloudStorage();
-      closeSyncSettingsModal();
     }
 
     function saveCustomFirebaseConfig() {
       const val = document.getElementById('firebaseConfigInput').value.trim();
-      if (!val) {
-        showToast('請輸入有效的 JSON 格式 Config');
-        return;
-      }
-      try {
-        JSON.parse(val);
-        localStorage.setItem('custom_firebase_config', val);
-        showToast('已儲存自訂 Firebase Config，正在建立連線...');
-        initCloudStorage();
-        closeSyncSettingsModal();
-      } catch (err) {
-        showToast('❌ JSON 格式不正確，請檢查輸入內容');
+      if (val) {
+        try {
+          JSON.parse(val);
+          localStorage.setItem('custom_firebase_config', val);
+          showToast('已儲存 Firebase 設定');
+          initCloudStorage();
+          closeSyncSettingsModal();
+        } catch (e) {
+          showToast('❌ JSON 格式不正確');
+        }
       }
     }
 
     function clearCustomFirebaseConfig() {
       localStorage.removeItem('custom_firebase_config');
-      document.getElementById('firebaseConfigInput').value = '';
-      showToast('已清除自訂 Firebase 設定');
+      showToast('已清除 Firebase 設定');
       initCloudStorage();
     }
 
@@ -1967,11 +1742,11 @@
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cards, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `cards_backup_${new Date().toISOString().slice(0,10)}.json`);
+      downloadAnchor.setAttribute("download", `cards_canvas_${new Date().toISOString().slice(0,10)}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
-      showToast('已完成 JSON 備份檔匯出！');
+      showToast('已匯出 JSON 備份檔！');
     }
 
     function importCardsJSON(e) {
@@ -1984,37 +1759,28 @@
           if (Array.isArray(imported)) {
             cards = imported.map(normalizeCard);
             saveAndRefresh();
-            cards.forEach(c => saveCardToCloud(c));
             showToast(`已成功匯入 ${cards.length} 張卡片！`);
             closeSyncSettingsModal();
-          } else {
-            showToast('❌ 檔案格式不符合卡片資料結構');
           }
-        } catch (err) {
-          showToast('❌ 匯入失敗，請確認檔案為正確的 JSON 備份');
-        }
+        } catch (err) {}
       };
       reader.readAsText(file);
     }
 
-    // 綁定全域 window
+    // 全域 window 綁定
     window.switchMainTab = switchMainTab;
     window.openAddModal = openAddModal;
     window.openEditModal = openEditModal;
     window.closeAddModal = closeAddModal;
     window.openScanModal = openScanModal;
     window.closeScanModal = closeScanModal;
-    window.switchScanBarcodeType = switchScanBarcodeType;
-    window.toggleCardBarcodeType = toggleCardBarcodeType;
     window.deleteCard = deleteCard;
     window.closeDeleteModal = closeDeleteModal;
     window.confirmDeleteCard = confirmDeleteCard;
-    window.clearImagePreview = clearImagePreview;
     window.toggleCropAspectRatio = toggleCropAspectRatio;
     window.rotateCropImage = rotateCropImage;
     window.confirmCrop = confirmCrop;
     window.closeCropModal = closeCropModal;
-    window.reCropExistingImage = reCropExistingImage;
     window.openSyncSettingsModal = openSyncSettingsModal;
     window.closeSyncSettingsModal = closeSyncSettingsModal;
     window.saveSyncRoomKey = saveSyncRoomKey;
@@ -2022,6 +1788,10 @@
     window.clearCustomFirebaseConfig = clearCustomFirebaseConfig;
     window.exportCardsJSON = exportCardsJSON;
     window.importCardsJSON = importCardsJSON;
+    window.downloadCanvasPNG = downloadCanvasPNG;
+    window.reCropExistingImage = reCropExistingImage;
+    window.clearImagePreview = clearImagePreview;
+    window.switchScanBarcodeType = switchScanBarcodeType;
   </script>
 </body>
 </html>
