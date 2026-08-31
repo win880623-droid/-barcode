@@ -506,7 +506,8 @@
     function getStoredSyncKey() {
       let key = localStorage.getItem('canvas_cards_sync_key');
       if (!key) {
-        key = 'wallet-' + Math.random().toString(36).substring(2, 8);
+        // 預設為全域共用暗號，確保所有裝置開啟時自動進入同一個雲端同步空間
+        key = 'common-wallet-room';
         localStorage.setItem('canvas_cards_sync_key', key);
       }
       return key;
@@ -1140,15 +1141,16 @@
       const croppedCanvas = cropperInstance.getCroppedCanvas({ fillColor: '#ffffff' });
       if (!croppedCanvas) return;
 
+      // 適度壓縮解析度 (500x315) 與 JPEG 品質 (0.68)，確保圖片大小低於 100KB，可穩定存入雲端
       const targetCanvas = document.createElement('canvas');
-      targetCanvas.width = 800;
-      targetCanvas.height = 504;
+      targetCanvas.width = 500;
+      targetCanvas.height = 315;
       const ctx = targetCanvas.getContext('2d');
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, 800, 504);
-      ctx.drawImage(croppedCanvas, 0, 0, 800, 504);
+      ctx.fillRect(0, 0, 500, 315);
+      ctx.drawImage(croppedCanvas, 0, 0, 500, 315);
 
-      const croppedDataUrl = targetCanvas.toDataURL('image/jpeg', 0.88);
+      const croppedDataUrl = targetCanvas.toDataURL('image/jpeg', 0.68);
       closeCropModal(true);
       if (onCropSuccessCallback) onCropSuccessCallback(croppedDataUrl);
     }
